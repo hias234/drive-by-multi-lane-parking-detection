@@ -1,4 +1,4 @@
-from gps_poller.GpsPoller import GpsPoller
+from drive_by_sensing.gps_poller.GpsPoller import GpsPoller
 from time import sleep
 
 
