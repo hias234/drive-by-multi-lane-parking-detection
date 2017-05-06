@@ -9,6 +9,7 @@ def p(sensor_name, timestamp, sensed_values):
 
 sensor_file_writer = SensorFileWriter('/home/pi/Desktop/data/raw_' + str(time.time()) + '.dat')
 
+
 gps_poller = GpsPoller(observers=[p, sensor_file_writer.writeLine])
 try:
     gps_poller.start()

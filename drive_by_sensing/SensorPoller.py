@@ -14,6 +14,8 @@ class SensorPoller(threading.Thread):
         self.observers = observers
 
     def run(self):
+        self.setup_sensor()
+
         while self.running:
             sensed_values = self.get_sensor_values()
             timestamp = time.time()
@@ -22,6 +24,8 @@ class SensorPoller(threading.Thread):
 
             if self.sensing_interval_in_s is not None:
                 time.sleep(self.sensing_interval_in_s)
+
+        self.tear_down_sensor()
 
     def notify_observers(self, timestamp, sensed_values):
         if self.observers is not None:
@@ -35,3 +39,9 @@ class SensorPoller(threading.Thread):
 
     def get_sensor_values(self):
         return [-1.0]
+
+    def setup_sensor(self):
+        pass
+
+    def tear_down_sensor(self):
+        pass
