@@ -7,7 +7,7 @@ def p(sensed_value):
 
 gps_poller = GpsPoller(p, None)
 try:
-    gps_poller.run()
+    gps_poller.start()
     while True:
         sleep(1)
 
