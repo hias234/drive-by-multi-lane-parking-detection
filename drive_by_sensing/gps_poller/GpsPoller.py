@@ -9,5 +9,5 @@ class GpsPoller(SensorPoller):
         self.gpsd = gps(mode=WATCH_ENABLE)
 
     def get_sensor_values(self):
-        current_gps = self.gpsd.next()
-        return [current_gps.fix.latitude, current_gps.fix.longitude]
+        self.gpsd.next()
+        return [self.gpsd.fix.latitude, self.gpsd.fix.longitude]
