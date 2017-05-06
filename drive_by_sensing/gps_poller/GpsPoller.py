@@ -4,9 +4,10 @@ from gps import *
 
 class GpsPoller(SensorPoller):
 
-    def __init__(self, observers, sensing_interval_in_s):
-        SensorPoller.__init__(self, observers, sensing_interval_in_s)
+    def __init__(self, observers=None, sensing_interval_in_s=None):
+        SensorPoller.__init__(self, 'GPS', observers=observers, sensing_interval_in_s=sensing_interval_in_s)
         self.gpsd = gps(mode=WATCH_ENABLE)
 
-    def get_sensor_value(self):
-        return self.gpsd.next()
+    def get_sensor_values(self):
+        current_gps = self.gpsd.next()
+        return [current_gps.fix.latitude, current_gps.fix.longitude]
