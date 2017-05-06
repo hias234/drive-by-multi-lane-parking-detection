@@ -40,7 +40,7 @@ class LidarLite:
             return -1
 
     def writeAndWait(self, register, value):
-        self.bus.write_byte_data(self.address, register, value);
+        self.bus.write_byte_data(self.address, register, value)
         time.sleep(0.02)
 
     def readAndWait(self, register):

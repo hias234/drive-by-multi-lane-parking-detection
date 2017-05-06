@@ -14,7 +14,7 @@ lidar_poller = LidarLitePoller(observers=p, sensing_interval_in_s=1)
 gps_poller = GpsPoller(observers=[p, sensor_file_writer.writeLine])
 try:
     gps_poller.start()
-    lidar_poller.start()
+    # lidar_poller.start()
     while True:
         time.sleep(1)
 
@@ -24,5 +24,5 @@ except (KeyboardInterrupt, SystemExit):  # when you press ctrl+c
 gps_poller.running = False
 gps_poller.join(timeout=5)
 
-lidar_poller.running = False
-lidar_poller.join(timeout=5)
+#lidar_poller.running = False
+#lidar_poller.join(timeout=5)
