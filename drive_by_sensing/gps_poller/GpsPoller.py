@@ -1,4 +1,4 @@
-from drive_by_sensing.SensorPoller import SensorPoller
+from ..SensorPoller import SensorPoller
 from gps import *
 
 
