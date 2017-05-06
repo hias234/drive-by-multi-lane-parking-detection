@@ -6,11 +6,11 @@ import types
 
 class SensorPoller(threading.Thread):
 
-    def __init__(self, oberservers=None, sensing_interval_in_s=None):
+    def __init__(self, observers, sensing_interval_in_s):
         threading.Thread.__init__(self)
         self.running = True
         self.sensing_interval_in_s = sensing_interval_in_s
-        self.observers = oberservers
+        self.observers = observers
 
     def run(self):
         while self.running:
