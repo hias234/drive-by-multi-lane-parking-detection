@@ -3,7 +3,8 @@ from time import sleep
 
 
 def p(sensor_name, sensed_values):
-    print(sensor_name + " " + sensed_values)
+    print(sensor_name)
+    print(sensed_values)
 
 gps_poller = GpsPoller(observers=p)
 try:
