@@ -16,19 +16,20 @@ class SensorPoller(threading.Thread):
     def run(self):
         while self.running:
             sensed_values = self.get_sensor_values()
+            timestamp = time.time()
 
-            self.notify_observers(sensed_values)
+            self.notify_observers(timestamp, sensed_values)
 
             if self.sensing_interval_in_s is not None:
                 time.sleep(self.sensing_interval_in_s)
 
-    def notify_observers(self, sensed_values):
+    def notify_observers(self, timestamp, sensed_values):
         if self.observers is not None:
             if type(self.observers) is list or type(self.observers) is tuple:
                 for observer in self.observers:
-                    observer(self.sensor_name, sensed_values)
+                    observer(self.sensor_name, timestamp, sensed_values)
             else:
-                self.observers(self.sensor_name, sensed_values)
+                self.observers(self.sensor_name, timestamp, sensed_values)
         else:
             print(sensed_values)
 
