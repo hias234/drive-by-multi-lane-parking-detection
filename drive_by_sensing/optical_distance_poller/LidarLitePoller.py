@@ -31,6 +31,8 @@ class LidarLite:
         self.velWriteVal = 0x08
         self.velReadReg = 0x09
 
+        self.waitAfterRead = 0.01
+
     def connect(self, bus):
         try:
             self.bus = smbus.SMBus(bus)
@@ -41,11 +43,11 @@ class LidarLite:
 
     def writeAndWait(self, register, value):
         self.bus.write_byte_data(self.address, register, value)
-        time.sleep(0.02)
+        time.sleep(self.waitAfterRead)
 
     def readAndWait(self, register):
         res = self.bus.read_byte_data(self.address, register)
-        time.sleep(0.02)
+        time.sleep(self.waitAfterRead)
         return res
 
     def getDistance(self):
