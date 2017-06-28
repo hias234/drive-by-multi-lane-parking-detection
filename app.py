@@ -2,16 +2,18 @@ from drive_by_sensing.optical_distance_poller.LidarLitePoller import LidarLitePo
 from drive_by_sensing.gps_poller.GpsPoller import GpsPoller
 from drive_by_sensing.SensorFileWriter import SensorFileWriter
 import time
+import datetime
 
 
 def p(sensor_name, timestamp, sensed_values):
     print(timestamp, sensor_name, sensed_values)
 
-sensor_file_writer = SensorFileWriter('/home/pi/Desktop/data/raw_' + str(time.time()) + '.dat')
+sensor_file_writer = SensorFileWriter('/home/pi/Desktop/master/data/raw_' + datetime.datetime.now()
+                                      .strftime('%Y%m%d_%H%M%S_%f') + '.dat')
 
-lidar_poller = LidarLitePoller(observers=p, sensing_interval_in_s=0.1)
-#gps_poller = GpsPoller(observers=[p, sensor_file_writer.writeLine])
-gps_poller = GpsPoller(observers=[p])
+lidar_poller = LidarLitePoller(observers=[p, sensor_file_writer.writeLine], sensing_interval_in_s=0.001)
+gps_poller = GpsPoller(observers=[p, sensor_file_writer.writeLine])
+# gps_poller = GpsPoller(observers=[p])
 try:
     gps_poller.start()
     lidar_poller.start()
