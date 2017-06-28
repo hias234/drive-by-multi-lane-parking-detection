@@ -8,15 +8,21 @@ class SensorPoller(threading.Thread):
 
     def __init__(self, sensor_name, observers=None, sensing_interval_in_s=None):
         threading.Thread.__init__(self)
-        self.running = True
+        self._stop_event = threading.Event()
         self.sensor_name = sensor_name
         self.sensing_interval_in_s = sensing_interval_in_s
         self.observers = observers
 
+    def stop(self):
+        self._stop_event.set()
+
+    def stopped(self):
+        return self._stop_event.is_set()
+
     def run(self):
         self.setup_sensor()
 
-        while self.running:
+        while not self.stopped():
             sensed_values = self.get_sensor_values()
             timestamp = time.time()
 

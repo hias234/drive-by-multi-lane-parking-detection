@@ -21,8 +21,12 @@ try:
 except (KeyboardInterrupt, SystemExit):  # when you press ctrl+c
     print "\nKilling Thread..."
 
-gps_poller.running = False
+gps_poller.stop()
+lidar_poller.stop()
 gps_poller.join(timeout=5)
-
-lidar_poller.running = False
 lidar_poller.join(timeout=5)
+
+if gps_poller.isAlive():
+    print "gps-poller is alive :("
+if lidar_poller.isAlive():
+    print "lidar-poller is alive :("
