@@ -14,9 +14,9 @@ from mpl_toolkits.mplot3d import Axes3D
 RawMeasure = namedtuple('raw_measure', 'distance latitude longitude timestamp gt_ps_beside gt_ps_occupied')
 
 # comment in which measurements you want to evaluate
-#dir = "./m20170701_0_5ms_interval/"
-dir = "./m20170701_20ms_interval/"
-#defined_distances = [6,30,75,125,150,175,200,250,300,400]
+dir = "./m20170701_0_5ms_interval/"
+# dir = "./m20170701_20ms_interval/"
+# defined_distances = [6,30,75,125,150,175,200,250,300,400]
 
 defined_distances = [10,20,50,100,150,200,400,600,1000,1500]
 
@@ -32,21 +32,24 @@ for root, dirs, files in os.walk(dir):
             csv_reader = csv.reader(captured_file, delimiter=',')
             distances = []
             errors = []
+
+            nr_or_measures = 0
+            first_timestamp = None
+            last_timestamp = None
+
             for row in csv_reader:
                 sensor = row[0]
                 if sensor == 'LidarLite':
                     timestamp = float(row[1])
                     distance = float(row[2])
-                    #latitude = float(row[2])
-                    #longitude = float(row[3])
-                    #gt_ps_beside = row[4] == 'True'
-                    #gt_ps_occupied = row[5] == 'True'
 
-                    # if the distance is smaller or equals zero, then there was a timeout
+                    nr_or_measures += 1
+                    last_timestamp = timestamp
+                    if first_timestamp is None:
+                        first_timestamp = timestamp
+
                     if distance <= 1:
                         distance = 10000
-                    #if distance > 10000:
-                    #    distance = 1000
 
                     distances.append(distance)
                     errors.append(defined_distances[i] - distance)
@@ -62,6 +65,7 @@ for root, dirs, files in os.walk(dir):
             print numpy.mean(distances), numpy.std(distances)
             print numpy.max(distances), numpy.min(distances)
             print err_range
+            print nr_or_measures / (last_timestamp - first_timestamp)
             print ''
             i += 1
 
