@@ -14,7 +14,7 @@ sensor_file_writer = SensorFileWriter('/home/pi/Desktop/master/data/raw_' + date
 
 lidar_poller = LidarLitePoller(observers=[p, sensor_file_writer.write_csv_line], sensing_interval_in_s=0.001)
 gps_poller = GpsPoller(observers=[p, sensor_file_writer.write_csv_line])
-camera_poller = CameraPoller(observers=[sensor_file_writer.write_image_async], sensing_interval_in_s=0.01)
+camera_poller = CameraPoller(observers=[sensor_file_writer.write_image_async], sensing_interval_in_s=0.005)
 # gps_poller = GpsPoller(observers=[p])
 try:
     gps_poller.start()
