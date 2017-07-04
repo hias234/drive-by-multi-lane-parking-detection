@@ -20,7 +20,7 @@ class CameraPoller(SensorPoller):
     def get_sensor_values(self):
         print "get_image"
         image = self.cam.get_image()
-        print "got image " + image
+        print "got image "
         return [image]
 
     def setup_sensor(self):
