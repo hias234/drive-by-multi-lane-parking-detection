@@ -12,9 +12,9 @@ def p(sensor_name, timestamp, sensed_values):
 sensor_file_writer = SensorFileWriter('/home/pi/Desktop/master/data/raw_' + datetime.datetime.now()
                                       .strftime('%Y%m%d_%H%M%S_%f') + '.dat')
 
-lidar_poller = LidarLitePoller(observers=[p, sensor_file_writer.writeLine], sensing_interval_in_s=0.001)
-gps_poller = GpsPoller(observers=[p, sensor_file_writer.writeLine])
-camera_poller = CameraPoller(observers=[sensor_file_writer.writeImage], sensing_interval_in_s=0.01)
+lidar_poller = LidarLitePoller(observers=[p, sensor_file_writer.write_csv_line], sensing_interval_in_s=0.001)
+gps_poller = GpsPoller(observers=[p, sensor_file_writer.write_csv_line])
+camera_poller = CameraPoller(observers=[sensor_file_writer.write_image_async], sensing_interval_in_s=0.01)
 # gps_poller = GpsPoller(observers=[p])
 try:
     gps_poller.start()
