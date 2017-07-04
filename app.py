@@ -12,30 +12,30 @@ def p(sensor_name, timestamp, sensed_values):
 sensor_file_writer = SensorFileWriter('/home/pi/Desktop/master/data/raw_' + datetime.datetime.now()
                                       .strftime('%Y%m%d_%H%M%S_%f') + '.dat')
 
-#lidar_poller = LidarLitePoller(observers=[p, sensor_file_writer.writeLine], sensing_interval_in_s=0.001)
-#gps_poller = GpsPoller(observers=[p, sensor_file_writer.writeLine])
+lidar_poller = LidarLitePoller(observers=[p, sensor_file_writer.writeLine], sensing_interval_in_s=0.001)
+gps_poller = GpsPoller(observers=[p, sensor_file_writer.writeLine])
 camera_poller = CameraPoller(observers=[sensor_file_writer.writeImage], sensing_interval_in_s=0.1)
 # gps_poller = GpsPoller(observers=[p])
 try:
-    #gps_poller.start()
-    #lidar_poller.start()
+    gps_poller.start()
+    lidar_poller.start()
     camera_poller.start()
     while True:
-        time.sleep(1)
+        time.sleep(0.5)
 
 except (KeyboardInterrupt, SystemExit):  # when you press ctrl+c
     print "\nKilling Thread..."
 
-#gps_poller.stop()
-#lidar_poller.stop()
+gps_poller.stop()
+lidar_poller.stop()
 camera_poller.stop()
-#gps_poller.join(timeout=5)
-#lidar_poller.join(timeout=5)
+gps_poller.join(timeout=5)
+lidar_poller.join(timeout=5)
 camera_poller.join(timeout=5)
 
-#if gps_poller.isAlive():
-#    print "gps-poller is alive :("
-#if lidar_poller.isAlive():
-#    print "lidar-poller is alive :("
+if gps_poller.isAlive():
+    print "gps-poller is alive :("
+if lidar_poller.isAlive():
+    print "lidar-poller is alive :("
 if camera_poller.isAlive():
     print "camera-poller is alive :("

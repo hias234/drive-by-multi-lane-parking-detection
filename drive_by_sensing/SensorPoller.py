@@ -33,6 +33,8 @@ class SensorPoller(threading.Thread):
                 time_to_wait = self.sensing_interval_in_s - (end - start)
                 if time_to_wait > 0:
                     time.sleep(self.sensing_interval_in_s)
+                else:
+                    time.sleep(0.0005)
 
         self.tear_down_sensor()
 

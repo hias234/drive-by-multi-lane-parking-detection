@@ -20,11 +20,7 @@ class CameraPoller(SensorPoller):
         print "init camera poller succeeded"
 
     def get_sensor_values(self):
-        print "get_image"
-        start = time.time()
         image = self.cam.get_image()
-        print "got image "
-        print time.time() - start
         return [image]
 
     def setup_sensor(self):
