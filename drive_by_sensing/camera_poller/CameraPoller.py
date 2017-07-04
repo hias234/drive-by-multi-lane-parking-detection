@@ -2,6 +2,7 @@ from ..SensorPoller import SensorPoller
 import pygame, sys
 from pygame.locals import *
 import pygame.camera
+import time
 
 
 class CameraPoller(SensorPoller):
@@ -13,14 +14,17 @@ class CameraPoller(SensorPoller):
 
         pygame.init()
         pygame.camera.init()
-        self.cam = pygame.camera.Camera("/dev/video0", (704, 576))
+        # self.cam = pygame.camera.Camera("/dev/video0", (704, 576))
+        self.cam = pygame.camera.Camera("/dev/video0", (352, 288))
 
         print "init camera poller succeeded"
 
     def get_sensor_values(self):
         print "get_image"
+        start = time.time()
         image = self.cam.get_image()
         print "got image "
+        print time.time() - start
         return [image]
 
     def setup_sensor(self):
