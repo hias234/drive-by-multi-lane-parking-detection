@@ -13,7 +13,7 @@ class CameraPoller(SensorPoller):
 
         pygame.init()
         pygame.camera.init()
-        self.cam = pygame.camera.Camera("/dev/video0", (352, 288))
+        self.cam = pygame.camera.Camera("/dev/video0", (704, 576))
 
         print "init camera poller succeeded"
 
