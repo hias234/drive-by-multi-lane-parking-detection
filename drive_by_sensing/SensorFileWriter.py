@@ -1,3 +1,4 @@
+import os
 import csv
 import time
 import pygame, sys
@@ -13,7 +14,13 @@ class SensorFileWriter:
         self.path = path
 
     def writeImage(self, sensor_name, timestamp, sensed_values):
-        pygame.image.save(sensed_values[0], self.path + '/images_' + sensor_name + '/' +
+        image_path = self.path + '/images_' + sensor_name
+        if not os.path.exists(image_path):
+            os.makedirs(image_path)
+
+        print "save image to " + image_path
+
+        pygame.image.save(sensed_values[0], image_path + '/' +
                           datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S_%f') + '.png')
 
     def writeLine(self, sensor_name, timestamp, sensed_values):
