@@ -14,7 +14,7 @@ class SensorFileWriter:
         self.path = path
 
     def writeImage(self, sensor_name, timestamp, sensed_values):
-        image_path = self.path + '/images_' + sensor_name
+        image_path = self.path + '_images_' + sensor_name
         if not os.path.exists(image_path):
             os.makedirs(image_path)
 
