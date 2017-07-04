@@ -23,13 +23,16 @@ class SensorPoller(threading.Thread):
         self.setup_sensor()
 
         while not self.stopped():
+            start = time.time()
             sensed_values = self.get_sensor_values()
-            timestamp = time.time()
+            end = time.time()
 
-            self.notify_observers(timestamp, sensed_values)
+            self.notify_observers(end, sensed_values)
 
             if self.sensing_interval_in_s is not None:
-                time.sleep(self.sensing_interval_in_s)
+                time_to_wait = self.sensing_interval_in_s - (end - start)
+                if time_to_wait > 0:
+                    time.sleep(self.sensing_interval_in_s)
 
         self.tear_down_sensor()
 
