@@ -58,9 +58,10 @@ class GroundTruthTaggingApp(App):
         self.bt_start_here.bind(on_press=self.on_start_here)
         self.bt_parking_car = Button(text='Parking Car')
         self.bt_parking_car.bind(on_press=self.on_parking_car_clicked)
-        self.bt_vacant_parking_space = Button(text='Vacant Parking Space')
+        self.bt_overtaken_car = Button(text='Overtaken Car')
+        self.bt_overtaken_car.bind(on_press=self.on_overtaken_car_clicked)
         self.bt_no_parking_space = Button(text='No Parking Space')
-        self.bt_stop_here = Button(text='Stop Here')
+        self.bt_stop_here = Button(text='Stop Here and Save')
         self.bt_next = Button(text='>')
         self.bt_next.bind(on_press=self.on_next_clicked)
         self.button_layout.add_widget(self.bt_start_here)
@@ -75,6 +76,20 @@ class GroundTruthTaggingApp(App):
         timestamp = self.get_timestamp(self.cur_index)
 
         gt = GroundTruth(timestamp, True, False)
+        self.add_ground_truth(gt)
+        self.on_next_clicked('')
+
+    def on_overtaken_car_clicked(self, instance):
+        timestamp = self.get_timestamp(self.cur_index)
+
+        gt = GroundTruth(timestamp, False, True)
+        self.add_ground_truth(gt)
+        self.on_next_clicked('')
+
+    def on_no_car_clicked(self, instance):
+        timestamp = self.get_timestamp(self.cur_index)
+
+        gt = GroundTruth(timestamp, False, False)
         self.add_ground_truth(gt)
         self.on_next_clicked('')
 
@@ -109,8 +124,9 @@ class GroundTruthTaggingApp(App):
         self.button_layout.clear_widgets()
         self.button_layout.add_widget(self.bt_previous)
         self.button_layout.add_widget(self.bt_parking_car)
-        self.button_layout.add_widget(self.bt_vacant_parking_space)
         self.button_layout.add_widget(self.bt_no_parking_space)
+        self.button_layout.add_widget(self.bt_overtaken_car)
+        self.button_layout.add_widget(self.bt_stop_here)
         self.started_index = self.cur_index
 
 if __name__ == '__main__':
