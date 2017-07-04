@@ -32,8 +32,8 @@ class LidarLite:
         self.velReadReg = 0x09
 
         # value from github 0.02
-        # self.waitAfterRead = 0.001
-        self.waitAfterRead = 0.02
+        self.waitAfterRead = 0.001
+        # self.waitAfterRead = 0.02
 
     def connect(self, bus):
         try:
