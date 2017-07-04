@@ -26,8 +26,7 @@ class SensorFileWriter:
         print "save image to " + image_path
 
         pygame.image.save(sensed_values[0], image_path + '/' +
-                          # datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S_%f')
-                          str(timestamp) + '.jpg')
+                          datetime.datetime.utcfromtimestamp(timestamp).strftime('%Y%m%d_%H%M%S_%f') + '.jpg')
 
     def write_csv_line(self, sensor_name, timestamp, sensed_values):
         csv_row = [sensor_name, timestamp]
