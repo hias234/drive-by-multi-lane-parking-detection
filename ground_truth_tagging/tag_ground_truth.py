@@ -35,8 +35,8 @@ class GroundTruthTaggingApp(App):
 
         self.ground_truth = []
 
-        self.base_path = 'C:\\sw\\master\\collected data\\data\\raw_20170705_065342_107608.dat_images_Camera\\'
-        self.files = [f for f in os.listdir(self.base_path) if os.path.isfile(os.path.join(self.base_path, f))]
+        self.base_path = 'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\'
+        self.files = sorted([f for f in os.listdir(self.base_path) if os.path.isfile(os.path.join(self.base_path, f))])
         print self.files
 
         self.cur_index = 0
@@ -135,10 +135,7 @@ class GroundTruthTaggingApp(App):
             self.cur_index += 1
             self.image.source = os.path.join(self.base_path, self.files[self.cur_index])
         else:
-            popup = Popup(title='Test popup',
-                      content=Label(text='Reached End'),
-                      size_hint=(None, None), size=(400, 400))
-            popup.open()
+            self.on_stop_here(None)
 
     def on_prev_clicked(self, instance):
         if self.cur_index > 0 and (self.started_index is None or self.cur_index > self.started_index):
