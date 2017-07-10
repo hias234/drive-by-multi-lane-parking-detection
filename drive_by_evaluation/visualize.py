@@ -8,6 +8,7 @@ from math import cos, sqrt
 from geopy.distance import vincenty
 import numpy
 import matplotlib.pyplot as plt
+import gmplot
 from mpl_toolkits.mplot3d import Axes3D
 
 from measurement import Measurement
@@ -39,11 +40,21 @@ class MeasurementVisualization:
 
         fig.show()
 
+    def show_gps_locations(self, measurements):
+        gmap = gmplot.GoogleMapPlotter(48.3045, 14.291153333, 16)
+        gmap.scatter([raw.latitude for raw in measurements], [raw.longitude for raw in measurements],
+                     '#3B0B39', size=1, marker=False)
+
+        gmap.draw("C:\\sw\\master\\mymap.html")
+
+
+
 if __name__ == '__main__':
-    # measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065342_107608.dat')
-    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat')
+    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065342_107608.dat')
+    # measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat')
 
     visualization = MeasurementVisualization()
     visualization.show_distance_signal(measurements)
     visualization.show_3d(measurements)
+    visualization.show_gps_locations(measurements)
     plt.show()

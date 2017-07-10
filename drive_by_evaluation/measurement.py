@@ -40,7 +40,6 @@ class Measurement:
                     print 'unknown sensor', sensor_type
                 i += 1
 
-
         distance_index = 0
         while gps_measurements[0].timestamp > distances[distance_index].timestamp:
             distance_index += 1
@@ -63,6 +62,7 @@ class Measurement:
             gps_index += 1
 
         print 'interpolated gps measurements', len(measurements)
+        print 'seconds of measurement', measurements[len(measurements) - 1].timestamp - measurements[0].timestamp
 
         return Measurement.remove_when_the_car_stands(measurements)
 
