@@ -1,31 +1,24 @@
 
+import csv
 import os
 import time
+
 import kivy
-import csv
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.anchorlayout import AnchorLayout
+from kivy.graphics import Color
+from kivy.graphics import Rectangle
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
-from kivy.graphics import Color
-from kivy.graphics import Rectangle
+
 kivy.require('1.10.0')
 
 from kivy.app import App
-from kivy.uix.label import Label
 from kivy.uix.button import Button
-from kivy.uix.popup import Popup
 from kivy.core.window import Window
 
 from datetime import datetime
 
-
-class GroundTruth:
-    def __init__(self, timestamp, is_parking_car, is_overtaken_car):
-        self.timestamp = timestamp
-        self.is_parking_car = is_parking_car
-        self.is_overtaken_car = is_overtaken_car
+from drive_by_evaluation.ground_truth import GroundTruth
 
 
 class GroundTruthTaggingApp(App):

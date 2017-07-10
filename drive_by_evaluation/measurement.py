@@ -8,23 +8,24 @@ from math import cos, sqrt
 from geopy.distance import vincenty
 import numpy
 
+from ground_truth import GroundTruth
 
 class Measurement:
 
-    def __init__(self, distance, timestamp, latitude, longitude):
+    def __init__(self, distance, timestamp, latitude, longitude, ground_truth):
         self.distance = distance
         self.timestamp = timestamp
         self.latitude = latitude
         self.longitude = longitude
+        self.ground_truth = ground_truth
 
     @staticmethod
-    def read(file_path):
+    def read(file_path, ground_truth_path):
         gps_measurements = []
         distances = []
 
         with open(file_path, 'r') as captured_file:
             csv_reader = csv.reader(captured_file, delimiter=',')
-            distances = []
             i = 0
             last_gps_i = None
             for row in csv_reader:
@@ -39,6 +40,17 @@ class Measurement:
                 else:
                     print 'unknown sensor', sensor_type
                 i += 1
+
+        ground_truth = []
+        with open(ground_truth_path, 'r') as gt_file:
+            csv_reader = csv.reader(gt_file, delimiter=',')
+
+            for row in csv_reader:
+                if len(row) > 0:
+                    timestamp = float(row[0])
+                    is_parking_car = row[1] == 'True'
+                    is_overtaken_car = row[2] == 'True'
+                    ground_truth.append(GroundTruth(timestamp, is_parking_car, is_overtaken_car))
 
         distance_index = 0
         while gps_measurements[0].timestamp > distances[distance_index].timestamp:
@@ -56,12 +68,30 @@ class Measurement:
             while distance_index < len(distances) and next_g.timestamp > distances[distance_index].timestamp:
                 gps = g.get_interpolation(next_g, distances[distance_index].timestamp)
                 measurements.append(Measurement(distances[distance_index].distance, distances[distance_index].timestamp,
-                                                gps.latitude, gps.longitude))
+                                                gps.latitude, gps.longitude, None))
                 distance_index += 1
 
             gps_index += 1
 
         print 'interpolated gps measurements', len(measurements)
+
+        measure_index = 0
+        ground_truth_index = 0
+        while measurements[0].timestamp < ground_truth[0].timestamp:
+            measurements.pop(0)
+
+        while ground_truth_index < len(ground_truth):
+            gt = ground_truth[ground_truth_index]
+            while measure_index < len(measurements) and measurements[measure_index].timestamp < gt.timestamp:
+                measurements[measure_index].ground_truth = gt
+                measure_index += 1
+
+            ground_truth_index += 1
+
+        while measure_index < len(measurements):
+            measurements.pop(len(measurements) - 1)
+
+        print 'added ground truth', len(measurements)
         print 'seconds of measurement', measurements[len(measurements) - 1].timestamp - measurements[0].timestamp
 
         return Measurement.remove_when_the_car_stands(measurements)
@@ -102,6 +132,7 @@ class GPSMeasurement:
 
 
 if __name__ == '__main__':
-    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065342_107608.dat')
+    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
+                                    'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
     # Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat')
 
