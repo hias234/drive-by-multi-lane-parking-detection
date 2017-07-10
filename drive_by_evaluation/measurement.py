@@ -45,6 +45,10 @@ class Measurement:
         while gps_measurements[0].timestamp > distances[distance_index].timestamp:
             distance_index += 1
         gps_index = 0
+
+        print 'read gps measures', len(gps_measurements)
+        print 'read distance measures', len(distances)
+
         measurements = []
         while gps_index < len(gps_measurements) - 1:
             g = gps_measurements[gps_index]
@@ -58,8 +62,24 @@ class Measurement:
 
             gps_index += 1
 
-        return measurements
+        print 'interpolated gps measurements', len(measurements)
 
+        return Measurement.remove_when_the_car_stands(measurements)
+
+    @staticmethod
+    def remove_when_the_car_stands(measurements):
+        last_m = measurements[0]
+        i = 1
+        while i < len(measurements):
+            m = measurements[i]
+            if last_m.latitude == m.latitude and last_m.longitude == m.longitude:
+                measurements.pop(i)
+            else:
+                i += 1
+            last_m = m
+
+        print 'filtered standing situations', len(measurements)
+        return measurements
 
 class LidarLiteMeasurement:
     def __init__(self, timestamp, distance):

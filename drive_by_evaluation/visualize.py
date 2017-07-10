@@ -40,7 +40,8 @@ class MeasurementVisualization:
         fig.show()
 
 if __name__ == '__main__':
-    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065342_107608.dat')
+    # measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065342_107608.dat')
+    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat')
 
     visualization = MeasurementVisualization()
     visualization.show_distance_signal(measurements)
