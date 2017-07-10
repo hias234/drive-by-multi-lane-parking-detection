@@ -8,6 +8,8 @@ from kivy.uix.anchorlayout import AnchorLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
+from kivy.graphics import Color
+from kivy.graphics import Rectangle
 kivy.require('1.10.0')
 
 from kivy.app import App
@@ -18,11 +20,13 @@ from kivy.core.window import Window
 
 from datetime import datetime
 
+
 class GroundTruth:
     def __init__(self, timestamp, is_parking_car, is_overtaken_car):
         self.timestamp = timestamp
         self.is_parking_car = is_parking_car
         self.is_overtaken_car = is_overtaken_car
+
 
 class GroundTruthTaggingApp(App):
 
@@ -37,7 +41,10 @@ class GroundTruthTaggingApp(App):
 
         self.cur_index = 0
 
-        self.image = Image(source=os.path.join(self.base_path, self.files[0]), size_hint=(.7, .7), pos=(150, 250))
+        self.image = Image(source=os.path.join(self.base_path, self.files[0]), size=(352, 288), pos=(0, 0))
+        with self.image.canvas as canvas:
+            Color(1., 0, 0)
+            Rectangle(pos=(400, 100), size=(1, 400))
 
         self.button_layout = BoxLayout(orientation='horizontal', size_hint=(1, .1), pos=(0, 0))
         self.bt_previous = Button(text='<')
