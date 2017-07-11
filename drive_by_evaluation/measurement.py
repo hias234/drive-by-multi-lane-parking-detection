@@ -42,15 +42,16 @@ class Measurement:
                 i += 1
 
         ground_truth = []
-        with open(ground_truth_path, 'r') as gt_file:
-            csv_reader = csv.reader(gt_file, delimiter=',')
+        if ground_truth_path is not None:
+            with open(ground_truth_path, 'r') as gt_file:
+                csv_reader = csv.reader(gt_file, delimiter=',')
 
-            for row in csv_reader:
-                if len(row) > 0:
-                    timestamp = float(row[0])
-                    is_parking_car = row[1] == 'True'
-                    is_overtaken_car = row[2] == 'True'
-                    ground_truth.append(GroundTruth(timestamp, is_parking_car, is_overtaken_car))
+                for row in csv_reader:
+                    if len(row) > 0:
+                        timestamp = float(row[0])
+                        is_parking_car = row[1] == 'True'
+                        is_overtaken_car = row[2] == 'True'
+                        ground_truth.append(GroundTruth(timestamp, is_parking_car, is_overtaken_car))
 
         distance_index = 0
         while gps_measurements[0].timestamp > distances[distance_index].timestamp:
@@ -75,23 +76,25 @@ class Measurement:
 
         print 'interpolated gps measurements', len(measurements)
 
-        measure_index = 0
-        ground_truth_index = 0
-        while measurements[0].timestamp < ground_truth[0].timestamp:
-            measurements.pop(0)
+        if ground_truth_path is not None:
+            measure_index = 0
+            ground_truth_index = 0
+            while measurements[0].timestamp < ground_truth[0].timestamp:
+                measurements.pop(0)
 
-        while ground_truth_index < len(ground_truth):
-            gt = ground_truth[ground_truth_index]
-            while measure_index < len(measurements) and measurements[measure_index].timestamp < gt.timestamp:
-                measurements[measure_index].ground_truth = gt
-                measure_index += 1
+            while ground_truth_index < len(ground_truth):
+                gt = ground_truth[ground_truth_index]
+                while measure_index < len(measurements) and measurements[measure_index].timestamp < gt.timestamp:
+                    measurements[measure_index].ground_truth = gt
+                    measure_index += 1
 
-            ground_truth_index += 1
+                ground_truth_index += 1
 
-        while measure_index < len(measurements):
-            measurements.pop(len(measurements) - 1)
+            while measure_index < len(measurements):
+                measurements.pop(len(measurements) - 1)
 
-        print 'added ground truth', len(measurements)
+            print 'added ground truth', len(measurements)
+
         print 'seconds of measurement', measurements[len(measurements) - 1].timestamp - measurements[0].timestamp
 
         return Measurement.remove_when_the_car_stands(measurements)

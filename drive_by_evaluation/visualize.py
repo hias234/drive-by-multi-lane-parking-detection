@@ -24,6 +24,21 @@ class MeasurementVisualization:
 
         fig.show()
 
+    def show_distance_signal_scatter(self, measurements):
+        fig = plt.figure(1)
+        xs = [raw.timestamp for raw in measurements]
+        ys = [raw.distance for raw in measurements]
+        cs = []
+        for raw in measurements:
+            if raw.ground_truth.is_parking_car:
+                cs.append('r')
+            else:
+                cs.append('b')
+
+        plt.scatter(xs, ys, c=cs)
+
+        fig.show()
+
     def show_3d(self, measurements):
         fig = plt.figure(2)
         ax = fig.add_subplot(111, projection='3d')
@@ -31,8 +46,14 @@ class MeasurementVisualization:
         xs = [raw.latitude for raw in measurements]
         ys = [raw.longitude for raw in measurements]
         zs = [raw.distance for raw in measurements]
+        cs = []
+        for raw in measurements:
+            if raw.ground_truth.is_parking_car:
+                cs.append('r')
+            else:
+                cs.append('b')
 
-        ax.scatter(xs, ys, zs, 'z', depthshade=True)
+        ax.scatter(xs, ys, zs, 'z', c=cs, depthshade=True)
 
         ax.set_xlabel('Latitude')
         ax.set_ylabel('Longitude')
@@ -45,16 +66,16 @@ class MeasurementVisualization:
         gmap.scatter([raw.latitude for raw in measurements], [raw.longitude for raw in measurements],
                      '#3B0B39', size=1, marker=False)
 
-        gmap.draw("C:\\sw\\master\\mymap.html")
+        gmap.draw("C:\\sw\\master\\mymap1.html")
 
 
 
 if __name__ == '__main__':
-    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065342_107608.dat')
-    # measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat')
-
+    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
+                                    'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
+    #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat', None)
     visualization = MeasurementVisualization()
-    visualization.show_distance_signal(measurements)
+    visualization.show_distance_signal_scatter(measurements)
     visualization.show_3d(measurements)
-    visualization.show_gps_locations(measurements)
+    #visualization.show_gps_locations(measurements)
     plt.show()
