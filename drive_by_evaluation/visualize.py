@@ -15,8 +15,18 @@ from measurement import Measurement
 
 class MeasurementVisualization:
 
-    def show_distance_signal(self, measurements):
-        fig = plt.figure(1)
+    def show_distance_signal(self, measurements, fig=None):
+        if fig is None:
+            fig = plt.figure(4)
+        # xs = []
+        # length = 0
+        # for index in range(1, len(measurements)):
+        #     xs.append(length)
+        #     length += vincenty(
+        #                     (measurements[index - 1].latitude, measurements[index - 1].longitude),
+        #                     (measurements[index].latitude, measurements[index].longitude)
+        #                 ).meters
+        # xs.append(length)
         xs = [raw.timestamp for raw in measurements]
         ys = [raw.distance for raw in measurements]
 
@@ -24,8 +34,9 @@ class MeasurementVisualization:
 
         fig.show()
 
-    def show_distance_signal_scatter(self, measurements):
-        fig = plt.figure(1)
+    def show_distance_signal_scatter(self, measurements, fig=None):
+        if fig is None:
+            fig = plt.figure(1)
         xs = [raw.timestamp for raw in measurements]
         ys = [raw.distance for raw in measurements]
         cs = []
@@ -39,8 +50,9 @@ class MeasurementVisualization:
 
         fig.show()
 
-    def show_3d(self, measurements):
-        fig = plt.figure(2)
+    def show_3d(self, measurements, fig=None):
+        if fig is None:
+            fig = plt.figure(2)
         ax = fig.add_subplot(111, projection='3d')
 
         xs = [raw.latitude for raw in measurements]
@@ -75,7 +87,7 @@ if __name__ == '__main__':
     measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
                                     'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
     visualization = MeasurementVisualization()
-    visualization.show_distance_signal_scatter(measurements)
+    visualization.show_distance_signal(measurements)
     visualization.show_3d(measurements)
     #visualization.show_gps_locations(measurements)
     plt.show()
