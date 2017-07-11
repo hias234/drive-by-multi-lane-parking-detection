@@ -10,4 +10,4 @@ class GpsPoller(SensorPoller):
 
     def get_sensor_values(self):
         self.gpsd.next()
-        return [self.gpsd.fix.latitude, self.gpsd.fix.longitude]
+        return [self.gpsd.fix.latitude, self.gpsd.fix.longitude, self.gpsd.fix.speed]

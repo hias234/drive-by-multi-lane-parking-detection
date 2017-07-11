@@ -28,7 +28,7 @@ class GroundTruthTaggingApp(App):
 
         self.ground_truth = []
 
-        self.base_path = 'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\'
+        self.base_path = 'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\'
         self.files = sorted([f for f in os.listdir(self.base_path) if os.path.isfile(os.path.join(self.base_path, f))])
         print self.files
 
