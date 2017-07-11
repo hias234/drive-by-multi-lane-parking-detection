@@ -32,6 +32,10 @@ class MeasureCollection:
     def last_measure(self):
         return self.measures[len(self.measures) - 1]
 
+    def add_measure_collection(self, measure_collection):
+        for measure in measure_collection.measures:
+            self.add_measure(measure)
+
     def add_measure(self, measure):
         self.measures.append(measure)
 
@@ -75,38 +79,93 @@ class DriveByEvaluation:
     def __init__(self):
         self.visualize = MeasurementVisualization()
 
-    def evaluate(self, measurements):
-        measurements = [measure for measure in measurements if measure.distance > 1]
+    def filter_flawed_measurements(self, measurements):
+        filter_distance_above_threshold = 20
+        filter_outlier_distance_threshold = 300
+        filter_outlier = False
 
-        plateaus = []
-        cur_plateau = MeasureCollection()
-        for measure in measurements:
-            print measure.distance, cur_plateau.avg_distance
-            if cur_plateau.is_empty() is None or abs(cur_plateau.avg_distance - measure.distance) < 20:
-                cur_plateau.add_measure(measure)
-            else:
-                print 'new plateau'
-                if len(cur_plateau.measures) > 1:
-                    plateaus.append(cur_plateau)
-                cur_plateau = MeasureCollection()
-                cur_plateau.add_measure(measure)
+        i = 0
+        filtered_measurements = []
+        while i < len(measurements):
+            add = True
+            if measurements[i].distance <= filter_distance_above_threshold:
+                add = False
+            elif filter_outlier and 0 < i < len(measurements) - 1:
+                diff_to_prev = abs(measurements[i].distance - measurements[i-1].distance)
+                diff_to_next = abs(measurements[i].distance - measurements[i+1].distance)
+                if diff_to_next > filter_outlier_distance_threshold \
+                        and diff_to_prev > filter_outlier_distance_threshold:
+                    add = False
+            if add:
+                filtered_measurements.append(measurements[i])
+            i += 1
+
+        print 'filtered measurements', len(filtered_measurements)
+        return filtered_measurements
+
+    def evaluate(self, measurements):
+        measurements = self.filter_flawed_measurements(measurements)
+
+        plateaus = self.get_plateaus(measurements)
 
         fig = plt.figure(3)
         self.visualize.show_distance_signal_scatter(measurements, fig=fig)
 
         for plateau in plateaus:
-            print len(plateau.measures), plateau.avg_distance, plateau.get_length(), plateau.get_distance_variance()
+            # print len(plateau.measures), plateau.avg_distance, plateau.get_length(), plateau.get_distance_variance()
             xs = [plateau.first_measure().timestamp, plateau.last_measure().timestamp]
-            #ys = [plateau.first_measure().distance, plateau.last_measure().distance]
-            ys = [plateau.avg_distance, plateau.avg_distance]
-            plt.plot(xs, ys)
+            ys = [plateau.first_measure().distance, plateau.last_measure().distance]
+            # ys = [plateau.avg_distance, plateau.avg_distance]
+            plt.plot(xs, ys, color='black')
+            plt.scatter(xs, ys, color='black', s=5)
         fig.show()
 
+    def get_plateaus(self, measurements):
+        abs_to_avg_distance_threshold = 50
+
+        plateaus = []
+        cur_plateau = MeasureCollection()
+        for measure in measurements:
+            if cur_plateau.is_empty() is None \
+                    or abs(cur_plateau.avg_distance - measure.distance) < abs_to_avg_distance_threshold:
+                cur_plateau.add_measure(measure)
+            else:
+                if len(cur_plateau.measures) > 0:
+                    plateaus.append(cur_plateau)
+                cur_plateau = MeasureCollection()
+                cur_plateau.add_measure(measure)
+
+        if len(cur_plateau.measures) > 0:
+            plateaus.append(cur_plateau)
+
+        print 'found plateaus', len(plateaus)
+
+        plateaus = self.merge_plateaus(plateaus)
+
+        return plateaus
+
+    def merge_plateaus(self, plateaus):
+        threshold_distance_between_ends = 50
+
+        i = 1
+        while i < len(plateaus):
+            distance_between_ends = abs(plateaus[i-1].last_measure().distance - plateaus[i].first_measure().distance)
+            # print distance_between_ends
+            if distance_between_ends <= threshold_distance_between_ends:
+                plateaus[i-1].add_measure_collection(plateaus[i])
+                plateaus.pop(i)
+            else:
+                i += 1
+
+        print 'merged plateaus', len(plateaus)
+
+        return plateaus
+
 if __name__ == '__main__':
-    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
-                                    'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
-    #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
-    #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
+    #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
+    #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
+    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
+                                    'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
     evaluation = DriveByEvaluation()
     evaluation.evaluate(measurements)
     plt.show()

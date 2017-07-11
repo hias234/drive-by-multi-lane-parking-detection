@@ -39,16 +39,22 @@ class MeasurementVisualization:
             fig = plt.figure(1)
         xs = [raw.timestamp for raw in measurements]
         ys = [raw.distance for raw in measurements]
-        cs = []
-        for raw in measurements:
-            if raw.ground_truth.is_parking_car:
-                cs.append('r')
-            else:
-                cs.append('b')
+        cs = self.get_color_list(measurements)
 
         plt.scatter(xs, ys, c=cs)
 
         fig.show()
+
+    def get_color_list(self, measurements):
+        cs = []
+        for raw in measurements:
+            if raw.ground_truth.is_parking_car:
+                cs.append('g')
+            elif raw.ground_truth.is_overtaken_car:
+                cs.append('r')
+            else:
+                cs.append('y')
+        return cs
 
     def show_3d(self, measurements, fig=None):
         if fig is None:
@@ -58,12 +64,7 @@ class MeasurementVisualization:
         xs = [raw.latitude for raw in measurements]
         ys = [raw.longitude for raw in measurements]
         zs = [raw.distance for raw in measurements]
-        cs = []
-        for raw in measurements:
-            if raw.ground_truth.is_parking_car:
-                cs.append('r')
-            else:
-                cs.append('b')
+        cs = self.get_color_list(measurements)
 
         ax.scatter(xs, ys, zs, 'z', c=cs, depthshade=True)
 
