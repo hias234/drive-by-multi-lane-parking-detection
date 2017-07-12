@@ -23,6 +23,22 @@ class MeasureCollection:
         self.center_longitude = 0
         self.variance = -1.0
 
+    def get_probable_ground_truth(self):
+        nr_of_gt_measures = {'NO_PARKING': 0.0, 'PARKING_CAR': 0.0, 'OVERTAKEN_CAR': 0.0}
+        for measure in self.measures:
+            if measure.ground_truth.is_parking_car:
+                nr_of_gt_measures['PARKING_CAR'] += 1
+            elif measure.ground_truth.is_overtaken_car:
+                nr_of_gt_measures['OVERTAKEN_CAR'] += 1
+            else:
+                nr_of_gt_measures['NO_PARKING'] += 1
+
+        if self.get_length() > 0.5 and (nr_of_gt_measures['PARKING_CAR'] / len(self.measures)) > 0.7:
+            return 'OCCUPIED_PARKING_SPACE'
+        if self.get_length() > 0.5 and (nr_of_gt_measures['OVERTAKEN_CAR'] / len(self.measures)) > 0.7:
+            return 'OVERTAKEN_CAR'
+        return 'NO_PARKING'
+
     def is_empty(self):
         return len(self.measures) == 0
 
@@ -51,7 +67,7 @@ class MeasureCollection:
         self.center_latitude = (first_measure.latitude + last_measure.latitude) / 2
 
     def get_length(self):
-        length = 0
+        length = 0.0
         if len(self.measures) > 0:
             last_measure = self.measures[0]
             for i in range(1, len(self.measures)):
@@ -116,7 +132,9 @@ class DriveByEvaluation:
             xs = [plateau.first_measure().timestamp, plateau.last_measure().timestamp]
             ys = [plateau.first_measure().distance, plateau.last_measure().distance]
             # ys = [plateau.avg_distance, plateau.avg_distance]
-            plt.plot(xs, ys, color='black')
+            colors = {'NO_PARKING': 'black', 'OCCUPIED_PARKING_SPACE': 'orange', 'OVERTAKEN_CAR': 'magenta'}
+            probable_gt = plateau.get_probable_ground_truth()
+            plt.plot(xs, ys, color=colors[probable_gt])
             plt.scatter(xs, ys, color='black', s=5)
         fig.show()
 
@@ -125,15 +143,16 @@ class DriveByEvaluation:
 
         plateaus = []
         cur_plateau = MeasureCollection()
+        last_plateau_distance = None
         for measure in measurements:
-            if cur_plateau.is_empty() is None \
-                    or abs(cur_plateau.avg_distance - measure.distance) < abs_to_avg_distance_threshold:
+            if cur_plateau.is_empty() or abs(last_plateau_distance - measure.distance) < abs_to_avg_distance_threshold:
                 cur_plateau.add_measure(measure)
             else:
                 if len(cur_plateau.measures) > 0:
                     plateaus.append(cur_plateau)
                 cur_plateau = MeasureCollection()
                 cur_plateau.add_measure(measure)
+            last_plateau_distance = measure.distance
 
         if len(cur_plateau.measures) > 0:
             plateaus.append(cur_plateau)
@@ -162,10 +181,10 @@ class DriveByEvaluation:
         return plateaus
 
 if __name__ == '__main__':
-    #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
-    #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
-    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
-                                    'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
+    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
+                                    'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
+    #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
+    #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
     evaluation = DriveByEvaluation()
     evaluation.evaluate(measurements)
     plt.show()
