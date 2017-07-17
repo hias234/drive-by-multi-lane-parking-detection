@@ -6,7 +6,9 @@ import csv
 from collections import namedtuple
 from math import cos, sqrt
 from geopy.distance import vincenty
-import numpy
+import numpy as np
+import scipy
+from scipy.signal import butter, lfilter
 import matplotlib.pyplot as plt
 import gmplot
 from mpl_toolkits.mplot3d import Axes3D
@@ -31,6 +33,29 @@ class MeasurementVisualization:
         ys = [raw.distance for raw in measurements]
 
         plt.plot(xs, ys)
+
+        #median_distance = np.mean(ys)
+        #plt.plot([xs[0], xs[len(xs) - 1]], [median_distance, median_distance])
+
+        fig.show()
+
+    def show_distance_signal_low_pass(self, measurements,  fig=None):
+        if fig is None:
+            fig = plt.figure(5)
+
+        xs = [raw.timestamp for raw in measurements]
+        ys = [raw.distance for raw in measurements]
+
+        fs = 10E9  # 1 ns -> 1 GHz
+        cutoff = 10E6  # 10 MHz
+        B, A = butter(1, cutoff / (fs / 2), btype='low')  # 1st order Butterworth low-pass
+        ys_filtered = lfilter(B, A, ys, axis=0)
+
+        #bz, az = scipy.signal.butter(0, 1 / (200 / 2))  # Gives you lowpass Butterworth as default
+        #ys_filtered = scipy.signal.filtfilt(bz, az, input)  # Makes forward/reverse filtering (linear phase filter)
+
+        plt.plot(xs, ys)
+        plt.plot(xs, ys_filtered)
 
         fig.show()
 
@@ -83,12 +108,12 @@ class MeasurementVisualization:
 
 
 if __name__ == '__main__':
-    #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
-    #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
-    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
-                                    'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
+    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
+                                    'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
+    #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
+    #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
     visualization = MeasurementVisualization()
     visualization.show_distance_signal(measurements)
-    visualization.show_3d(measurements)
+    #visualization.show_3d(measurements)
     #visualization.show_gps_locations(measurements)
     plt.show()
