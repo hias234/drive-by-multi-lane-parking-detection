@@ -9,6 +9,9 @@ from kivy.graphics import Rectangle
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
+from kivy.uix.textinput import TextInput
+from kivy.uix.filechooser import FileChooser
+from kivy.core.window import Window
 
 kivy.require('1.10.0')
 
@@ -21,14 +24,36 @@ from datetime import datetime
 from drive_by_evaluation.ground_truth import GroundTruth
 
 
-class GroundTruthTaggingApp(App):
+class GroundTruthTaggingAppStarter(App):
 
     def __init__(self, **kwargs):
+        super(GroundTruthTaggingAppStarter, self).__init__(**kwargs)
+
+        self.fileChooser = TextInput()
+        self.submit = Button(text='Tag Ground-Truth')
+        self.submit.bind(on_press=self.on_submit)
+
+    def build(self):
+        layout = BoxLayout(orientation='vertical')
+        # Window.size = (500, 100)
+        layout.add_widget(self.fileChooser)
+        layout.add_widget(self.submit)
+
+        return layout
+
+    def on_submit(self, instance):
+        App.get_running_app().stop()
+        GroundTruthTaggingApp(self.fileChooser.text).run()
+
+
+class GroundTruthTaggingApp(App):
+
+    def __init__(self, base_path, **kwargs):
         super(GroundTruthTaggingApp, self).__init__(**kwargs)
 
         self.ground_truth = []
 
-        self.base_path = 'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\'
+        self.base_path = base_path
         self.files = sorted([f for f in os.listdir(self.base_path) if os.path.isfile(os.path.join(self.base_path, f))])
         print self.files
 
@@ -64,6 +89,7 @@ class GroundTruthTaggingApp(App):
 
     def build(self):
         layout = FloatLayout(size=(300, 300))
+        # Window.size = (1000, 700)
         layout.add_widget(self.image)
         layout.add_widget(self.button_layout)
 
@@ -152,5 +178,7 @@ class GroundTruthTaggingApp(App):
                 print gt.timestamp, gt.is_parking_car, gt.is_overtaken_car
                 csv_out.writerow([gt.timestamp, gt.is_parking_car, gt.is_overtaken_car])
 
+        App.get_running_app().stop()
+
 if __name__ == '__main__':
-    GroundTruthTaggingApp().run()
+    GroundTruthTaggingAppStarter().run()

@@ -1,4 +1,5 @@
 
+import os
 from geopy.distance import vincenty
 import csv
 
@@ -11,6 +12,8 @@ class MeasureCollection:
         self.measures = []
         self.sum_distance = 0
         self.avg_distance = 0
+        self.sum_speed = 0
+        self.avg_speed = 0
         self.length = 0
         self.center_latitude = 0
         self.center_longitude = 0
@@ -26,9 +29,9 @@ class MeasureCollection:
             else:
                 nr_of_gt_measures['NO_PARKING'] += 1
 
-        if self.get_length() > 0.5 and (nr_of_gt_measures['PARKING_CAR'] / len(self.measures)) > 0.7:
+        if self.get_length() > 1 and (nr_of_gt_measures['PARKING_CAR'] / len(self.measures)) > 0.7:
             return 'OCCUPIED_PARKING_SPACE'
-        if self.get_length() > 0.5 and (nr_of_gt_measures['OVERTAKEN_CAR'] / len(self.measures)) > 0.7:
+        if self.get_length() > 1 and (nr_of_gt_measures['OVERTAKEN_CAR'] / len(self.measures)) > 0.7:
             return 'OVERTAKEN_CAR'
         return 'NO_PARKING'
 
@@ -50,6 +53,8 @@ class MeasureCollection:
 
         self.sum_distance += measure.distance
         self.avg_distance = self.sum_distance / len(self.measures)
+        self.sum_speed += measure.speed
+        self.avg_speed = self.sum_speed / len(self.measures)
         self.length = self.get_length()
         self.variance = -1
 
@@ -60,17 +65,22 @@ class MeasureCollection:
         self.center_latitude = (first_measure.latitude + last_measure.latitude) / 2
 
     def get_length(self):
-        length = 0.0
-        if len(self.measures) > 0:
-            last_measure = self.measures[0]
-            for i in range(1, len(self.measures)):
-                length += vincenty(
-                            (self.measures[i].latitude, self.measures[i].longitude),
-                            (last_measure.latitude, last_measure.longitude)
-                        ).meters
-                last_measure = self.measures[i]
+        # length = 0.0
+        # if len(self.measures) > 0:
+        #     last_measure = self.measures[0]
+        #     for i in range(1, len(self.measures)):
+        #         length += vincenty(
+        #                     (self.measures[i].latitude, self.measures[i].longitude),
+        #                     (last_measure.latitude, last_measure.longitude)
+        #                 ).meters
+        #         last_measure = self.measures[i]
+        #
+        # return length
+        return vincenty((self.first_measure().latitude, self.first_measure().longitude),
+                        (self.last_measure().latitude, self.last_measure().longitude)).meters
 
-        return length
+    def get_nr_of_measures(self):
+        return len(self.measures)
 
     def get_distance_variance(self):
         if self.variance != -1.0:
@@ -81,6 +91,9 @@ class MeasureCollection:
             sum_top = (measure.distance - self.avg_distance)**2
 
         return sum_top / len(self.measures)
+
+    def get_duration(self):
+        return self.last_measure().timestamp - self.first_measure().timestamp
 
     @staticmethod
     def create_measure_collections(measurements):
@@ -158,3 +171,36 @@ class MeasureCollection:
                     last_id = cur_id
 
         return measure_collections
+
+    @staticmethod
+    def write_arff_file(measure_collections, path):
+        write_header = not os.path.exists(path)
+
+        with open(path, 'a') as arff_file:
+            if write_header:
+                arff_file.write("@RELATION driveby\n")
+                arff_file.write("@ATTRIBUTE avg_distance NUMERIC\n")
+                arff_file.write("@ATTRIBUTE length NUMERIC\n")
+                arff_file.write("@ATTRIBUTE duration_s NUMERIC\n")
+                arff_file.write("@ATTRIBUTE nr_of_measures NUMERIC\n")
+                arff_file.write("@ATTRIBUTE distance_variance NUMERIC\n")
+                arff_file.write("@ATTRIBUTE avg_speed NUMERIC\n")
+                arff_file.write("@ATTRIBUTE class {NO_PARKING, OCCUPIED_PARKING_SPACE, OVERTAKEN_CAR}\n")
+                arff_file.write("\n\n\n")
+                arff_file.write("@DATA\n")
+
+            for measure_collection in measure_collections:
+                arff_file.write(str(measure_collection.avg_distance))
+                arff_file.write(",")
+                arff_file.write(str(measure_collection.get_length()))
+                arff_file.write(",")
+                arff_file.write(str(measure_collection.get_duration()))
+                arff_file.write(",")
+                arff_file.write(str(measure_collection.get_nr_of_measures()))
+                arff_file.write(",")
+                arff_file.write(str(measure_collection.get_distance_variance()))
+                arff_file.write(",")
+                arff_file.write(str(measure_collection.avg_speed))
+                arff_file.write(",")
+                arff_file.write(measure_collection.get_probable_ground_truth())
+                arff_file.write("\n")

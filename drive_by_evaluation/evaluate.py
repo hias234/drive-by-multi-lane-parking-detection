@@ -64,7 +64,7 @@ class DriveByEvaluation:
             plt.scatter(xs, ys, color='black', s=5)
         fig.show()
 
-        first_plateaus = plateaus[0:20]
+        first_plateaus = plateaus[50:70]
         plateau_avg_distances = [p.avg_distance for p in first_plateaus]
         bins = [0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 100000]
         freq, bins = np.histogram(plateau_avg_distances, bins, weights=[len(p.measures) for p in first_plateaus])
@@ -76,10 +76,14 @@ if __name__ == '__main__':
     #                                'C:\\sw\\master\\collected data\\data_20170707\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
     #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
     #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
+    # measurements = Measurement.read('C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074348_696382.dat',
+    #                                'C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074348_696382.dat_images_Camera\\00gt1500398878.87.dat')
+    measurements = Measurement.read('C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074500_002138.dat',
+                                    'C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074500_002138.dat_images_Camera\\00gt1500400602.86.dat')
     #plateaus = MeasureCollection.create_measure_collections(measurements)
     #MeasureCollection.write_to_file('C:\\sw\\master\\collected data\\data_20170707\\tagged_mc_20170705_065613_869794.dat', plateaus)
-    #evaluation = DriveByEvaluation()
-    #evaluation.evaluate(measurements)
+    evaluation = DriveByEvaluation()
+    evaluation.evaluate(measurements)
 
     #bins = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 100000]
     #bins = [0, 50, 100, 150, 200, 250, 300, 350, 400, 100000]

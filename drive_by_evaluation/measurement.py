@@ -13,11 +13,12 @@ from ground_truth import GroundTruth
 
 class Measurement:
 
-    def __init__(self, distance, timestamp, latitude, longitude, ground_truth):
+    def __init__(self, distance, timestamp, latitude, longitude, speed, ground_truth):
         self.distance = distance
         self.timestamp = timestamp
         self.latitude = latitude
         self.longitude = longitude
+        self.speed = speed
         self.ground_truth = ground_truth
 
     @staticmethod
@@ -36,7 +37,7 @@ class Measurement:
                     distances.append(LidarLiteMeasurement(timestamp, float(row[2])))
                 elif sensor_type == 'GPS':
                     if row[2] != '0.0' and row[3] != '0.0' and (last_gps_i is None or (i - last_gps_i) < 3):
-                        gps_measurements.append(GPSMeasurement(timestamp, float(row[2]), float(row[3])))
+                        gps_measurements.append(GPSMeasurement(timestamp, float(row[2]), float(row[3]), float(row[4])))
                     last_gps_i = i
                 else:
                     print 'unknown sensor', sensor_type
@@ -70,7 +71,7 @@ class Measurement:
             while distance_index < len(distances) and next_g.timestamp > distances[distance_index].timestamp:
                 gps = g.get_interpolation(next_g, distances[distance_index].timestamp)
                 measurements.append(Measurement(distances[distance_index].distance, distances[distance_index].timestamp,
-                                                gps.latitude, gps.longitude, None))
+                                                gps.latitude, gps.longitude, gps.speed, None))
                 distance_index += 1
 
             gps_index += 1
@@ -106,7 +107,7 @@ class Measurement:
         i = 1
         while i < len(measurements):
             m = measurements[i]
-            if last_m.latitude == m.latitude and last_m.longitude == m.longitude:
+            if m.speed < 0.5 or (last_m.latitude == m.latitude and last_m.longitude == m.longitude):
                 measurements.pop(i)
             else:
                 i += 1
@@ -122,17 +123,19 @@ class LidarLiteMeasurement:
 
 
 class GPSMeasurement:
-    def __init__(self, timestamp, latitude, longitude):
+    def __init__(self, timestamp, latitude, longitude, speed):
         self.timestamp = timestamp
         self.latitude = latitude
         self.longitude = longitude
+        self.speed = speed
 
     def get_interpolation(self, other_gps, ts):
         lan = self.latitude + (other_gps.latitude - self.latitude)\
                             * (ts - self.timestamp) / (other_gps.timestamp - self.timestamp)
         lon = self.longitude + (other_gps.longitude - self.longitude)\
                              * (ts - self.timestamp) / (other_gps.timestamp - self.timestamp)
-        return GPSMeasurement(ts, lan, lon)
+        speed = (self.speed + other_gps.speed) / 2.0
+        return GPSMeasurement(ts, lan, lon, speed)
 
 
 if __name__ == '__main__':
