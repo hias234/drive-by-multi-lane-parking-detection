@@ -10,6 +10,7 @@ import numpy
 
 from ground_truth import GroundTruth
 
+
 class Measurement:
 
     def __init__(self, distance, timestamp, latitude, longitude, ground_truth):
@@ -135,7 +136,8 @@ class GPSMeasurement:
 
 
 if __name__ == '__main__':
-    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
-                                    'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
-    # Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat')
+    measurements = Measurement.read('C:\\sw\\master\\collected data\\data_20170707\\raw_20170705_065613_869794.dat',
+                                    'C:\\sw\\master\\collected data\\data_20170707\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
+    #MeasureCollection.write_to_file('C:\\sw\\master\\collected data\\data_20170707\\tagged_20170705_065613_869794.dat')
+
 

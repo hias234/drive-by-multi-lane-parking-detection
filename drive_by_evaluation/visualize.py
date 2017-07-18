@@ -14,6 +14,8 @@ import gmplot
 from mpl_toolkits.mplot3d import Axes3D
 
 from measurement import Measurement
+from measure_collection import MeasureCollection
+
 
 class MeasurementVisualization:
 
@@ -107,13 +109,30 @@ class MeasurementVisualization:
         gmap.draw("C:\\sw\\master\\mymap1.html")
 
 
+    def show_distances_plus_segmentation(self, measure_collections, fig=None):
+        if fig is None:
+            fig = plt.figure(8)
+        for measure_collection in measure_collections:
+            self.show_distance_signal_scatter(measure_collection.measures, fig=fig)
+            # print len(plateau.measures), plateau.avg_distance, plateau.get_length(), plateau.get_distance_variance()
+            xs = [measure_collection.first_measure().timestamp, measure_collection.last_measure().timestamp]
+            ys = [measure_collection.first_measure().distance, measure_collection.last_measure().distance]
+            # ys = [plateau.avg_distance, plateau.avg_distance]
+            colors = {'NO_PARKING': 'black', 'OCCUPIED_PARKING_SPACE': 'orange', 'OVERTAKEN_CAR': 'magenta'}
+            probable_gt = measure_collection.get_probable_ground_truth()
+            plt.plot(xs, ys, color=colors[probable_gt])
+            plt.scatter(xs, ys, color='black', s=5)
+        fig.show()
+
 if __name__ == '__main__':
-    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
-                                    'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
+    #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
+    #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
     #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
     #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
     visualization = MeasurementVisualization()
-    visualization.show_distance_signal(measurements)
+    measure_collections = MeasureCollection.read_from_file('C:\\sw\\master\\collected data\\data_20170707\\tagged_mc_20170705_065613_869794.dat')
+    visualization.show_distances_plus_segmentation(measure_collections)
+    #visualization.show_distance_signal(measurements)
     #visualization.show_3d(measurements)
     #visualization.show_gps_locations(measurements)
     plt.show()

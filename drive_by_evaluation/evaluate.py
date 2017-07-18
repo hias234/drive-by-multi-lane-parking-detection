@@ -71,14 +71,15 @@ class DriveByEvaluation:
         for i in range(0, len(bins)-1):
             print bins[i], freq[i]
 
-
 if __name__ == '__main__':
-    measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
-                                    'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
+    #measurements = Measurement.read('C:\\sw\\master\\collected data\\data_20170707\\raw_20170705_065613_869794.dat',
+    #                                'C:\\sw\\master\\collected data\\data_20170707\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
     #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
     #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
-    evaluation = DriveByEvaluation()
-    evaluation.evaluate(measurements)
+    #plateaus = MeasureCollection.create_measure_collections(measurements)
+    #MeasureCollection.write_to_file('C:\\sw\\master\\collected data\\data_20170707\\tagged_mc_20170705_065613_869794.dat', plateaus)
+    #evaluation = DriveByEvaluation()
+    #evaluation.evaluate(measurements)
 
     #bins = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 100000]
     #bins = [0, 50, 100, 150, 200, 250, 300, 350, 400, 100000]

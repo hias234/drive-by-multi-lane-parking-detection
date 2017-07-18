@@ -1,8 +1,9 @@
 
 from geopy.distance import vincenty
+import csv
 
 from measurement import Measurement
-from visualize import MeasurementVisualization
+from ground_truth import GroundTruth
 
 
 class MeasureCollection:
@@ -124,3 +125,36 @@ class MeasureCollection:
         print 'merged plateaus', len(plateaus)
 
         return plateaus
+
+    @staticmethod
+    def write_to_file(path, measure_collections):
+        with open(path, 'a') as file_to_write:
+            csv_writer = csv.writer(file_to_write)
+            cur_id = 0
+            for measure_collection in measure_collections:
+                for measure in measure_collection.measures:
+                    csv_writer.writerow([cur_id, measure.distance, measure.timestamp, measure.latitude, measure.longitude,
+                                         measure.ground_truth.is_parking_car, measure.ground_truth.is_overtaken_car])
+                cur_id += 1
+
+    @staticmethod
+    def read_from_file(path):
+        with open(path, 'r') as file_to_read_from:
+            csv_reader = csv.reader(file_to_read_from, delimiter=',')
+            measure_collections = []
+            last_id = None
+            measure_collection = None
+            for row in csv_reader:
+                if len(row) > 0:
+                    cur_id = row[0]
+                    if last_id is None or last_id != cur_id:
+                        if measure_collection is not None:
+                            measure_collections.append(measure_collection)
+                        measure_collection = MeasureCollection()
+
+                    measure_collection.add_measure(Measurement(float(row[1]), float(row[2]), float(row[3]), float(row[4]),
+                                                               GroundTruth(float(row[2]), row[5] == 'True',
+                                                                           row[6] == 'True')))
+                    last_id = cur_id
+
+        return measure_collections
