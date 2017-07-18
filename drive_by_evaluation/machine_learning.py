@@ -13,7 +13,7 @@ for f in files:
         print gt_files[0]
         measurements1 = Measurement.read(data_file, os.path.join(camera_folder, gt_files[0]))
         measure_collections1 = MeasureCollection.create_measure_collections(measurements1)
-        MeasureCollection.write_arff_file(measure_collections1, 'C:\\sw\\master\\00ml.arff')
+        MeasureCollection.write_arff_file(measure_collections1, 'C:\\sw\\master\\00ml_curve.arff')
 
 # measurements1 = Measurement.read('C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074500_002138.dat',
 #                                     'C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074500_002138.dat_images_Camera\\00gt1500400602.86.dat')

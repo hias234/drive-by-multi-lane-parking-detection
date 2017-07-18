@@ -2,9 +2,14 @@
 import os
 from geopy.distance import vincenty
 import csv
+from scipy.optimize import curve_fit
 
 from measurement import Measurement
 from ground_truth import GroundTruth
+
+
+def fit_func(x, a, b, c):
+    return a*x*x + b*x + c
 
 
 class MeasureCollection:
@@ -94,6 +99,13 @@ class MeasureCollection:
 
     def get_duration(self):
         return self.last_measure().timestamp - self.first_measure().timestamp
+
+    def get_curve_fit_params(self):
+        params = curve_fit(fit_func, [m.timestamp for m in self.measures], [m.distance for m in self.measures])
+        # params[0][0] *= 1E10
+        # params[0][1] *= 1E10
+        # params[0][2] *= 1E10
+        return params[0]
 
     @staticmethod
     def create_measure_collections(measurements):
@@ -185,6 +197,9 @@ class MeasureCollection:
                 arff_file.write("@ATTRIBUTE nr_of_measures NUMERIC\n")
                 arff_file.write("@ATTRIBUTE distance_variance NUMERIC\n")
                 arff_file.write("@ATTRIBUTE avg_speed NUMERIC\n")
+                arff_file.write("@ATTRIBUTE curve_fit_a NUMERIC\n")
+                arff_file.write("@ATTRIBUTE curve_fit_b NUMERIC\n")
+                arff_file.write("@ATTRIBUTE curve_fit_c NUMERIC\n")
                 arff_file.write("@ATTRIBUTE class {NO_PARKING, OCCUPIED_PARKING_SPACE, OVERTAKEN_CAR}\n")
                 arff_file.write("\n\n\n")
                 arff_file.write("@DATA\n")
@@ -201,6 +216,20 @@ class MeasureCollection:
                 arff_file.write(str(measure_collection.get_distance_variance()))
                 arff_file.write(",")
                 arff_file.write(str(measure_collection.avg_speed))
+                arff_file.write(",")
+                curve_fits = [0, 0, 0]
+                try:
+                    curve_fits = measure_collection.get_curve_fit_params()
+                except RuntimeError:
+                    pass
+                except TypeError:
+                    pass
+                print curve_fits
+                arff_file.write(str(curve_fits[0]))
+                arff_file.write(",")
+                arff_file.write(str(curve_fits[1]))
+                arff_file.write(",")
+                arff_file.write(str(curve_fits[2]))
                 arff_file.write(",")
                 arff_file.write(measure_collection.get_probable_ground_truth())
                 arff_file.write("\n")
