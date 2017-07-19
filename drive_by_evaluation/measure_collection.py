@@ -10,13 +10,13 @@ from ground_truth import GroundTruth
 class MeasureCollection:
     def __init__(self):
         self.measures = []
-        self.sum_distance = 0
-        self.avg_distance = 0
-        self.sum_speed = 0
-        self.avg_speed = 0
-        self.length = 0
-        self.center_latitude = 0
-        self.center_longitude = 0
+        self.sum_distance = 0.0
+        self.avg_distance = 0.0
+        self.sum_speed = 0.0
+        self.avg_speed = 0.0
+        self.length = 0.0
+        self.center_latitude = 0.0
+        self.center_longitude = 0.0
         self.variance = -1.0
 
     def get_probable_ground_truth(self):
@@ -29,9 +29,11 @@ class MeasureCollection:
             else:
                 nr_of_gt_measures['NO_PARKING'] += 1
 
-        if self.get_length() > 1 and (nr_of_gt_measures['PARKING_CAR'] / len(self.measures)) > 0.7:
+        if self.get_length() > 1 and self.avg_distance > 5 and \
+                        (nr_of_gt_measures['PARKING_CAR'] / len(self.measures)) > 0.7:
             return 'OCCUPIED_PARKING_SPACE'
-        if self.get_length() > 1 and (nr_of_gt_measures['OVERTAKEN_CAR'] / len(self.measures)) > 0.7:
+        if self.get_length() > 1 and self.avg_distance > 5 and \
+                        (nr_of_gt_measures['OVERTAKEN_CAR'] / len(self.measures)) > 0.7:
             return 'OVERTAKEN_CAR'
         return 'NO_PARKING'
 
@@ -172,6 +174,10 @@ class MeasureCollection:
 
         return measure_collections
 
+    def is_maybe_parking_car(self):
+        return self.get_length() > 0.7 and self.avg_speed > 0.5 and \
+               self.avg_distance > 10.0
+
     @staticmethod
     def write_arff_file(measure_collections, path):
         write_header = not os.path.exists(path)
@@ -191,17 +197,18 @@ class MeasureCollection:
                 arff_file.write("@DATA\n")
 
             for measure_collection in measure_collections:
-                arff_file.write(str(measure_collection.avg_distance))
-                arff_file.write(",")
-                arff_file.write(str(measure_collection.get_length()))
-                arff_file.write(",")
-                arff_file.write(str(measure_collection.get_duration()))
-                arff_file.write(",")
-                arff_file.write(str(measure_collection.get_nr_of_measures()))
-                arff_file.write(",")
-                arff_file.write(str(measure_collection.get_distance_variance()))
-                arff_file.write(",")
-                arff_file.write(str(measure_collection.avg_speed))
-                arff_file.write(",")
-                arff_file.write(measure_collection.get_probable_ground_truth())
-                arff_file.write("\n")
+                if measure_collection.is_maybe_parking_car():
+                    arff_file.write(str(measure_collection.avg_distance))
+                    arff_file.write(",")
+                    arff_file.write(str(measure_collection.get_length()))
+                    arff_file.write(",")
+                    arff_file.write(str(measure_collection.get_duration()))
+                    arff_file.write(",")
+                    arff_file.write(str(measure_collection.get_nr_of_measures()))
+                    arff_file.write(",")
+                    arff_file.write(str(measure_collection.get_distance_variance()))
+                    arff_file.write(",")
+                    arff_file.write(str(measure_collection.avg_speed))
+                    arff_file.write(",")
+                    arff_file.write(measure_collection.get_probable_ground_truth())
+                    arff_file.write("\n")
