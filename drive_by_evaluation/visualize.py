@@ -130,8 +130,22 @@ if __name__ == '__main__':
     #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
     #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
     visualization = MeasurementVisualization()
-    measure_collections = MeasureCollection.read_from_file('C:\\sw\\master\\collected data\\data_20170707\\tagged_mc_20170705_065613_869794.dat')
-    visualization.show_distances_plus_segmentation(measure_collections)
+    base_path = 'C:\\sw\\master\\collected data\\data_20170718\\'
+    files = sorted([f for f in os.listdir(base_path) if os.path.isfile(os.path.join(base_path, f))])
+
+    i = 1
+    for f in files:
+        data_file = os.path.join(base_path, f)
+        camera_folder = os.path.join(base_path, f) + '_images_Camera\\'
+        gt_files = [gt_f for gt_f in os.listdir(camera_folder) if gt_f.startswith('00gt')]
+        if (len(gt_files) > 0):
+            print gt_files[0]
+            measurements1 = Measurement.read(data_file, os.path.join(camera_folder, gt_files[0]))
+            measure_collections1 = MeasureCollection.create_measure_collections(measurements1)
+            visualization.show_distances_plus_segmentation(measure_collections1, fig=plt.figure(i))
+        i += 1
+    #measure_collections = MeasureCollection.read_from_file('C:\\sw\\master\\collected data\\data_20170707\\tagged_mc_20170705_065613_869794.dat')
+    #visualization.show_distances_plus_segmentation(measure_collections)
     #visualization.show_distance_signal(measurements)
     #visualization.show_3d(measurements)
     #visualization.show_gps_locations(measurements)

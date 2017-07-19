@@ -175,9 +175,10 @@ class MeasureCollection:
     @staticmethod
     def write_arff_file(measure_collections, path):
         write_header = not os.path.exists(path)
+        is_arff_file = path.endswith('.arff')
 
         with open(path, 'a') as arff_file:
-            if write_header:
+            if write_header and is_arff_file:
                 arff_file.write("@RELATION driveby\n")
                 arff_file.write("@ATTRIBUTE avg_distance NUMERIC\n")
                 arff_file.write("@ATTRIBUTE length NUMERIC\n")
