@@ -100,6 +100,7 @@ class MeasureCollection:
     @staticmethod
     def create_measure_collections(measurements):
         abs_to_avg_distance_threshold = 90
+        min_measure_count = 1
 
         plateaus = []
         cur_plateau = MeasureCollection()
@@ -108,13 +109,13 @@ class MeasureCollection:
             if cur_plateau.is_empty() or abs(last_plateau_distance - measure.distance) < abs_to_avg_distance_threshold:
                 cur_plateau.add_measure(measure)
             else:
-                if len(cur_plateau.measures) > 0:
+                if len(cur_plateau.measures) >= min_measure_count:
                     plateaus.append(cur_plateau)
                 cur_plateau = MeasureCollection()
                 cur_plateau.add_measure(measure)
             last_plateau_distance = measure.distance
 
-        if len(cur_plateau.measures) > 0:
+        if len(cur_plateau.measures) > min_measure_count:
             plateaus.append(cur_plateau)
 
         print 'found plateaus', len(plateaus)

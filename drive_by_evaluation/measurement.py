@@ -116,6 +116,7 @@ class Measurement:
         print 'filtered standing situations', len(measurements)
         return measurements
 
+
 class LidarLiteMeasurement:
     def __init__(self, timestamp, distance):
         self.distance = distance
