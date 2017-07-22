@@ -4,7 +4,7 @@ from geopy.distance import vincenty
 import csv
 
 from measurement import Measurement
-from ground_truth import GroundTruth
+from ground_truth import GroundTruth, GroundTruthClass
 
 
 class MeasureCollection:
@@ -20,22 +20,54 @@ class MeasureCollection:
         self.variance = -1.0
 
     def get_probable_ground_truth(self):
-        nr_of_gt_measures = {'NO_PARKING': 0.0, 'PARKING_CAR': 0.0, 'OVERTAKEN_CAR': 0.0}
-        for measure in self.measures:
-            if measure.ground_truth.is_parking_car:
-                nr_of_gt_measures['PARKING_CAR'] += 1
-            elif measure.ground_truth.is_overtaken_car:
-                nr_of_gt_measures['OVERTAKEN_CAR'] += 1
-            else:
-                nr_of_gt_measures['NO_PARKING'] += 1
+        ratio_threshold = 0.6
 
-        if self.get_length() > 1 and self.avg_distance > 5 and \
-                        (nr_of_gt_measures['PARKING_CAR'] / len(self.measures)) > 0.7:
-            return 'OCCUPIED_PARKING_SPACE'
-        if self.get_length() > 1 and self.avg_distance > 5 and \
-                        (nr_of_gt_measures['OVERTAKEN_CAR'] / len(self.measures)) > 0.7:
-            return 'OVERTAKEN_CAR'
-        return 'NO_PARKING'
+        nr_of_gt_measures = {}
+        for measure in self.measures:
+            cur_number = nr_of_gt_measures.get(measure.ground_truth.ground_truth_class.name)
+            if cur_number is None:
+                cur_number = 1.0
+            else:
+                cur_number += 1.0
+            nr_of_gt_measures[measure.ground_truth.ground_truth_class.name] = cur_number
+
+        if self.get_length() > 1.5 and self.avg_distance > 5 and \
+                        nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name) is not None and \
+                        (nr_of_gt_measures[GroundTruthClass.PARALLEL_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
+            return GroundTruthClass.PARALLEL_PARKING_CAR
+        if self.get_length() > 1.0 and self.avg_distance > 5 and \
+                        nr_of_gt_measures.get(GroundTruthClass.PERPENDICULAR_PARKING_CAR.name) is not None and \
+                        (nr_of_gt_measures[GroundTruthClass.PERPENDICULAR_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
+            return GroundTruthClass.PERPENDICULAR_PARKING_CAR
+        if self.get_length() > 1.0 and self.avg_distance > 5 and \
+                        nr_of_gt_measures.get(GroundTruthClass.OTHER_PARKING_CAR.name) is not None and \
+                        (nr_of_gt_measures[GroundTruthClass.OTHER_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
+            return GroundTruthClass.OTHER_PARKING_CAR
+
+        if self.get_length() > 1.0 and self.avg_distance > 5 and \
+                        nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_CAR.name) is not None and \
+                        (nr_of_gt_measures[GroundTruthClass.OVERTAKEN_CAR.name] / len(self.measures)) > ratio_threshold:
+            return GroundTruthClass.OVERTAKEN_CAR
+        if self.get_length() > 1.0 and self.avg_distance > 5 and \
+                        nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_BICYCLE.name) is not None and \
+                        (nr_of_gt_measures[GroundTruthClass.OVERTAKEN_BICYCLE.name] / len(self.measures)) > ratio_threshold:
+            return GroundTruthClass.OVERTAKEN_BICYCLE
+        if self.get_length() > 1.0 and self.avg_distance > 5 and \
+                        nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_MOTORCYCLE.name) is not None and \
+                        (nr_of_gt_measures[GroundTruthClass.OVERTAKEN_MOTORCYCLE.name] / len(self.measures)) > ratio_threshold:
+            return GroundTruthClass.OVERTAKEN_MOTORCYCLE
+
+        if self.get_length() > 0.1 and self.avg_distance > 5 and \
+                        nr_of_gt_measures.get(GroundTruthClass.PARKING_BICYCLE.name) is not None and \
+                        (nr_of_gt_measures[GroundTruthClass.PARKING_BICYCLE.name] / len(self.measures)) > ratio_threshold:
+            return GroundTruthClass.PARKING_BICYCLE
+
+        if self.get_length() > 0.1 and self.avg_distance > 5 and \
+                        nr_of_gt_measures.get(GroundTruthClass.PARKING_MOTORCYCLE.name) is not None and \
+                        (nr_of_gt_measures[GroundTruthClass.PARKING_MOTORCYCLE.name] / len(self.measures)) > ratio_threshold:
+            return GroundTruthClass.PARKING_MOTORCYCLE
+
+        return GroundTruthClass.FREE_SPACE
 
     def is_empty(self):
         return len(self.measures) == 0
@@ -78,6 +110,7 @@ class MeasureCollection:
         #         last_measure = self.measures[i]
         #
         # return length
+        #print self.first_measure().latitude, self.first_measure().longitude, self.last_measure().latitude, self.last_measure().longitude
         return vincenty((self.first_measure().latitude, self.first_measure().longitude),
                         (self.last_measure().latitude, self.last_measure().longitude)).meters
 

@@ -7,11 +7,10 @@ import kivy
 from kivy.graphics import Color
 from kivy.graphics import Rectangle
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.gridlayout import GridLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
 from kivy.uix.textinput import TextInput
-from kivy.uix.filechooser import FileChooser
-from kivy.core.window import Window
 
 kivy.require('1.10.0')
 
@@ -21,7 +20,7 @@ from kivy.core.window import Window
 
 from datetime import datetime
 
-from drive_by_evaluation.ground_truth import GroundTruth
+from drive_by_evaluation.ground_truth import GroundTruth, GroundTruthClass
 
 
 class GroundTruthTaggingAppStarter(App):
@@ -64,16 +63,22 @@ class GroundTruthTaggingApp(App):
             Color(1., 0, 0)
             Rectangle(pos=(400, 100), size=(1, 400))
 
-        self.button_layout = BoxLayout(orientation='horizontal', size_hint=(1, .1), pos=(0, 0))
+        self.button_layout = GridLayout(cols=3, size_hint=(1, .25), pos=(0, 0))
         self.bt_previous = Button(text='<')
         self.bt_previous.bind(on_press=self.on_prev_clicked)
-        self.bt_start_here = Button(text='Start from here [b]')
+        self.bt_start_here = Button(text='Start from here [s]')
         self.bt_start_here.bind(on_press=self.on_start_here)
-        self.bt_parking_car = Button(text='Parking Car [p]')
-        self.bt_parking_car.bind(on_press=self.on_parking_car_clicked)
-        self.bt_overtaken_car = Button(text='Overtaken Car [o]')
+        self.bt_par_parking_car = Button(text='Par. Parking Car [p]')
+        self.bt_par_parking_car.bind(on_press=self.on_par_parking_car_clicked)
+        self.bt_per_parking_car = Button(text='Per. Parking Car [l]')
+        self.bt_other_parking_car = Button(text='Other Parking Car [k]')
+        self.bt_parking_motorcycle = Button(text='Parking Motorcycle [j]')
+        self.bt_parking_bicycle = Button(text='Parking Bicycle [h]')
+        self.bt_overtaken_car = Button(text='Overtaken Car [c]')
+        self.bt_overtaken_bicycle = Button(text='Overtaken Bicycle [b]')
+        self.bt_overtaken_motorcycle = Button(text='Overtaken Motorcycle [m]')
         self.bt_overtaken_car.bind(on_press=self.on_overtaken_car_clicked)
-        self.bt_no_parking_space = Button(text='No Parking Car [n]')
+        self.bt_free_space = Button(text='Free Space [f]')
         self.bt_stop_here = Button(text='Stop Here and Save [e]')
         self.bt_stop_here.bind(on_press=self.on_stop_here)
         self.bt_next = Button(text='>')
@@ -104,36 +109,90 @@ class GroundTruthTaggingApp(App):
             self.on_next_clicked(None)
         elif keycode[1] == 'left':
             self.on_prev_clicked(None)
-        elif keycode[1] == 'b' and self.started_index is None:
+        elif keycode[1] == 's' and self.started_index is None:
             self.on_start_here(None)
         elif keycode[1] == 'p' and self.started_index is not None:
-            self.on_parking_car_clicked(None)
-        elif keycode[1] == 'n' and self.started_index is not None:
-            self.on_no_car_clicked(None)
-        elif keycode[1] == 'o' and self.started_index is not None:
+            self.on_par_parking_car_clicked(None)
+        elif keycode[1] == 'l' and self.started_index is not None:
+            self.on_per_parking_car_clicked(None)
+        elif keycode[1] == 'k' and self.started_index is not None:
+            self.on_other_parking_car_clicked(None)
+        elif keycode[1] == 'f' and self.started_index is not None:
+            self.on_free_space_clicked(None)
+        elif keycode[1] == 'c' and self.started_index is not None:
             self.on_overtaken_car_clicked(None)
+        elif keycode[1] == 'b' and self.started_index is not None:
+            self.on_overtaken_bicycle_clicked(None)
+        elif keycode[1] == 'm' and self.started_index is not None:
+            self.on_overtaken_motorcycle_clicked(None)
+        elif keycode[1] == 'j' and self.started_index is not None:
+            self.on_parking_motorcycle_clicked(None)
+        elif keycode[1] == 'h' and self.started_index is not None:
+            self.on_parking_bicycle_clicked(None)
         elif keycode[1] == 'e' and self.started_index is not None:
             self.on_stop_here(None)
         return True
 
-    def on_parking_car_clicked(self, instance):
+    def on_par_parking_car_clicked(self, instance):
         timestamp = self.get_timestamp(self.cur_index)
 
-        gt = GroundTruth(timestamp, True, False)
+        gt = GroundTruth(timestamp, GroundTruthClass.PARALLEL_PARKING_CAR)
+        self.add_ground_truth(gt)
+        self.on_next_clicked('')
+
+    def on_per_parking_car_clicked(self, instance):
+        timestamp = self.get_timestamp(self.cur_index)
+
+        gt = GroundTruth(timestamp, GroundTruthClass.PERPENDICULAR_PARKING_CAR)
+        self.add_ground_truth(gt)
+        self.on_next_clicked('')
+
+    def on_other_parking_car_clicked(self, instance):
+        timestamp = self.get_timestamp(self.cur_index)
+
+        gt = GroundTruth(timestamp, GroundTruthClass.OTHER_PARKING_CAR)
+        self.add_ground_truth(gt)
+        self.on_next_clicked('')
+
+    def on_parking_motorcycle_clicked(self, instance):
+        timestamp = self.get_timestamp(self.cur_index)
+
+        gt = GroundTruth(timestamp, GroundTruthClass.PARKING_MOTORCYCLE)
+        self.add_ground_truth(gt)
+        self.on_next_clicked('')
+
+    def on_parking_bicycle_clicked(self, instance):
+        timestamp = self.get_timestamp(self.cur_index)
+
+        gt = GroundTruth(timestamp, GroundTruthClass.PARKING_BICYCLE)
         self.add_ground_truth(gt)
         self.on_next_clicked('')
 
     def on_overtaken_car_clicked(self, instance):
         timestamp = self.get_timestamp(self.cur_index)
 
-        gt = GroundTruth(timestamp, False, True)
+        gt = GroundTruth(timestamp, GroundTruthClass.OVERTAKEN_CAR)
         self.add_ground_truth(gt)
         self.on_next_clicked('')
 
-    def on_no_car_clicked(self, instance):
+    def on_overtaken_bicycle_clicked(self, instance):
         timestamp = self.get_timestamp(self.cur_index)
 
-        gt = GroundTruth(timestamp, False, False)
+        gt = GroundTruth(timestamp, GroundTruthClass.OVERTAKEN_BICYCLE)
+        self.add_ground_truth(gt)
+        self.on_next_clicked('')
+
+    def on_overtaken_motorcycle_clicked(self, instance):
+        timestamp = self.get_timestamp(self.cur_index)
+
+        gt = GroundTruth(timestamp, GroundTruthClass.OVERTAKEN_MOTORCYCLE)
+        self.add_ground_truth(gt)
+        self.on_next_clicked('')
+
+    def on_free_space_clicked(self, instance):
+        timestamp = self.get_timestamp(self.cur_index)
+
+        gt = GroundTruth(timestamp, GroundTruthClass.FREE_SPACE)
         self.add_ground_truth(gt)
         self.on_next_clicked('')
 
@@ -164,21 +223,25 @@ class GroundTruthTaggingApp(App):
     def on_start_here(self, instance):
         self.button_layout.clear_widgets()
         self.button_layout.add_widget(self.bt_previous)
-        self.button_layout.add_widget(self.bt_parking_car)
-        self.button_layout.add_widget(self.bt_no_parking_space)
+        self.button_layout.add_widget(self.bt_par_parking_car)
+        self.button_layout.add_widget(self.bt_per_parking_car)
+        self.button_layout.add_widget(self.bt_other_parking_car)
+        self.button_layout.add_widget(self.bt_parking_bicycle)
+        self.button_layout.add_widget(self.bt_parking_motorcycle)
+        self.button_layout.add_widget(self.bt_free_space)
         self.button_layout.add_widget(self.bt_overtaken_car)
+        self.button_layout.add_widget(self.bt_overtaken_bicycle)
+        self.button_layout.add_widget(self.bt_overtaken_motorcycle)
         self.button_layout.add_widget(self.bt_stop_here)
         self.started_index = self.cur_index
 
     def on_stop_here(self, instance):
-        with open(os.path.join(self.base_path, '00gt' + str(time.time()) + '.dat'), 'a') as out:
-            csv_out = csv.writer(out)
-
-            for gt in self.ground_truth:
-                print gt.timestamp, gt.is_parking_car, gt.is_overtaken_car
-                csv_out.writerow([gt.timestamp, gt.is_parking_car, gt.is_overtaken_car])
+        GroundTruth.write_to_file(os.path.join(self.base_path, '00gt' + str(time.time()) + '.dat'), self.ground_truth)
 
         App.get_running_app().stop()
+
+
+
 
 if __name__ == '__main__':
     GroundTruthTaggingAppStarter().run()

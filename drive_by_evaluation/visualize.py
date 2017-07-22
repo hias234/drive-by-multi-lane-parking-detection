@@ -11,6 +11,7 @@ import scipy
 from scipy.signal import butter, lfilter
 import matplotlib.pyplot as plt
 import gmplot
+from ground_truth import GroundTruthClass
 from mpl_toolkits.mplot3d import Axes3D
 
 from measurement import Measurement
@@ -75,10 +76,12 @@ class MeasurementVisualization:
     def get_color_list(self, measurements):
         cs = []
         for raw in measurements:
-            if raw.ground_truth.is_parking_car:
+            if GroundTruthClass.is_parking_car(raw.ground_truth.ground_truth_class):
                 cs.append('g')
-            elif raw.ground_truth.is_overtaken_car:
+            elif GroundTruthClass.is_overtaking_situation(raw.ground_truth.ground_truth_class):
                 cs.append('r')
+            elif GroundTruthClass.is_parking_motorcycle_or_bicycle(raw.ground_truth.ground_truth_class):
+                cs.append('c')
             else:
                 cs.append('y')
         return cs
@@ -108,7 +111,6 @@ class MeasurementVisualization:
 
         gmap.draw("C:\\sw\\master\\mymap1.html")
 
-
     def show_distances_plus_segmentation(self, measure_collections, fig=None):
         if fig is None:
             fig = plt.figure(8)
@@ -118,9 +120,15 @@ class MeasurementVisualization:
             xs = [measure_collection.first_measure().timestamp, measure_collection.last_measure().timestamp]
             ys = [measure_collection.first_measure().distance, measure_collection.last_measure().distance]
             # ys = [plateau.avg_distance, plateau.avg_distance]
-            colors = {'NO_PARKING': 'black', 'OCCUPIED_PARKING_SPACE': 'orange', 'OVERTAKEN_CAR': 'magenta'}
             probable_gt = measure_collection.get_probable_ground_truth()
-            plt.plot(xs, ys, color=colors[probable_gt])
+            color = 'black'
+            if GroundTruthClass.is_parking_car(probable_gt):
+                color = 'orange'
+            elif GroundTruthClass.is_overtaking_situation(probable_gt):
+                color = 'magenta'
+            elif GroundTruthClass.is_parking_motorcycle_or_bicycle(probable_gt):
+                color = 'yellow'
+            plt.plot(xs, ys, color=color)
             plt.scatter(xs, ys, color='black', s=5)
         fig.show()
 
@@ -130,7 +138,7 @@ if __name__ == '__main__':
     #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
     #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
     visualization = MeasurementVisualization()
-    base_path = 'C:\\sw\\master\\collected data\\data_20170718\\'
+    base_path = 'C:\\sw\\master\\collected data\\data_20170720\\'
     files = sorted([f for f in os.listdir(base_path) if os.path.isfile(os.path.join(base_path, f))])
 
     i = 1

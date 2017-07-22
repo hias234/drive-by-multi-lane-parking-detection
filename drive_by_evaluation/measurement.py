@@ -8,7 +8,7 @@ from math import cos, sqrt
 from geopy.distance import vincenty
 import numpy
 
-from ground_truth import GroundTruth
+from ground_truth import GroundTruth, GroundTruthClass
 
 
 class Measurement:
@@ -36,7 +36,9 @@ class Measurement:
                 if sensor_type == 'LidarLite':
                     distances.append(LidarLiteMeasurement(timestamp, float(row[2])))
                 elif sensor_type == 'GPS':
-                    if row[2] != '0.0' and row[3] != '0.0' and (last_gps_i is None or (i - last_gps_i) < 3):
+                    if row[2] != '0.0' and row[3] != '0.0' and \
+                            row[2] != 'nan' and row[3] != 'nan' and \
+                            (last_gps_i is None or (i - last_gps_i) < 3):
                         gps_measurements.append(GPSMeasurement(timestamp, float(row[2]), float(row[3]), float(row[4])))
                     last_gps_i = i
                 else:
@@ -45,15 +47,7 @@ class Measurement:
 
         ground_truth = []
         if ground_truth_path is not None:
-            with open(ground_truth_path, 'r') as gt_file:
-                csv_reader = csv.reader(gt_file, delimiter=',')
-
-                for row in csv_reader:
-                    if len(row) > 0:
-                        timestamp = float(row[0])
-                        is_parking_car = row[1] == 'True'
-                        is_overtaken_car = row[2] == 'True'
-                        ground_truth.append(GroundTruth(timestamp, is_parking_car, is_overtaken_car))
+            ground_truth = GroundTruth.read_from_file(ground_truth_path)
 
         distance_index = 0
         while gps_measurements[0].timestamp > distances[distance_index].timestamp:
@@ -99,7 +93,8 @@ class Measurement:
 
         print 'seconds of measurement', measurements[len(measurements) - 1].timestamp - measurements[0].timestamp
 
-        return Measurement.remove_when_the_car_stands(measurements)
+        #return Measurement.remove_when_the_car_stands(measurements)
+        return measurements
 
     @staticmethod
     def remove_when_the_car_stands(measurements):
