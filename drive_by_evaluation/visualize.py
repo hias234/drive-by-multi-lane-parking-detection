@@ -67,9 +67,11 @@ class MeasurementVisualization:
             fig = plt.figure(1)
         xs = [raw.timestamp for raw in measurements]
         ys = [raw.distance for raw in measurements]
+        speeds = [raw.speed * 100 * 3.6 for raw in measurements]
         cs = self.get_color_list(measurements)
 
         plt.scatter(xs, ys, c=cs)
+        plt.plot(xs, speeds, c='blue')
 
         fig.show()
 
@@ -138,7 +140,8 @@ if __name__ == '__main__':
     #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
     #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
     visualization = MeasurementVisualization()
-    base_path = 'C:\\sw\\master\\collected data\\data_20170720\\'
+    base_path = 'C:\\sw\\master\\collected data\\data_20170720_donau_traffic_jam_per\\'
+    # base_path = 'C:\\sw\\master\\collected data\\data_20170718_tunnel\\'
     files = sorted([f for f in os.listdir(base_path) if os.path.isfile(os.path.join(base_path, f))])
 
     i = 1

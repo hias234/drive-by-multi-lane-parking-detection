@@ -117,6 +117,12 @@ class MeasureCollection:
     def get_nr_of_measures(self):
         return len(self.measures)
 
+    def get_acceleration(self):
+        if self.last_measure().timestamp == self.first_measure().timestamp:
+            return 0
+        return ((self.last_measure().speed - self.first_measure().speed) /
+                (self.last_measure().timestamp - self.first_measure().timestamp))
+
     def get_distance_variance(self):
         if self.variance != -1.0:
             return self.variance
@@ -138,8 +144,11 @@ class MeasureCollection:
         plateaus = []
         cur_plateau = MeasureCollection()
         last_plateau_distance = None
+        last_plateau_timestamp = None
         for measure in measurements:
-            if cur_plateau.is_empty() or abs(last_plateau_distance - measure.distance) < abs_to_avg_distance_threshold:
+            if cur_plateau.is_empty() or \
+                    (abs(last_plateau_distance - measure.distance) < abs_to_avg_distance_threshold and
+                     abs(last_plateau_timestamp - measure.timestamp) < 1.0):
                 cur_plateau.add_measure(measure)
             else:
                 if len(cur_plateau.measures) >= min_measure_count:
@@ -147,6 +156,7 @@ class MeasureCollection:
                 cur_plateau = MeasureCollection()
                 cur_plateau.add_measure(measure)
             last_plateau_distance = measure.distance
+            last_plateau_timestamp = measure.timestamp
 
         if len(cur_plateau.measures) > min_measure_count:
             plateaus.append(cur_plateau)
@@ -244,5 +254,5 @@ class MeasureCollection:
                     arff_file.write(",")
                     arff_file.write(str(measure_collection.avg_speed))
                     arff_file.write(",")
-                    arff_file.write(measure_collection.get_probable_ground_truth())
+                    arff_file.write(measure_collection.get_probable_ground_truth().name)
                     arff_file.write("\n")

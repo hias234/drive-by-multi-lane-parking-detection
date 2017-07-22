@@ -93,8 +93,8 @@ class Measurement:
 
         print 'seconds of measurement', measurements[len(measurements) - 1].timestamp - measurements[0].timestamp
 
-        #return Measurement.remove_when_the_car_stands(measurements)
-        return measurements
+        return Measurement.remove_when_the_car_stands(measurements)
+        #return measurements
 
     @staticmethod
     def remove_when_the_car_stands(measurements):
@@ -102,7 +102,7 @@ class Measurement:
         i = 1
         while i < len(measurements):
             m = measurements[i]
-            if m.speed < 3 or (last_m.latitude == m.latitude and last_m.longitude == m.longitude):
+            if m.speed < 4.0 or (last_m.latitude == m.latitude and last_m.longitude == m.longitude):
                 measurements.pop(i)
             else:
                 i += 1
@@ -130,7 +130,8 @@ class GPSMeasurement:
                             * (ts - self.timestamp) / (other_gps.timestamp - self.timestamp)
         lon = self.longitude + (other_gps.longitude - self.longitude)\
                              * (ts - self.timestamp) / (other_gps.timestamp - self.timestamp)
-        speed = (self.speed + other_gps.speed) / 2.0
+        speed = self.speed + (other_gps.speed - self.speed)\
+                             * (ts - self.timestamp) / (other_gps.timestamp - self.timestamp)
         return GPSMeasurement(ts, lan, lon, speed)
 
 
