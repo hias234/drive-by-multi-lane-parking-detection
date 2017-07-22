@@ -102,7 +102,7 @@ class Measurement:
         i = 1
         while i < len(measurements):
             m = measurements[i]
-            if m.speed < 0.5 or (last_m.latitude == m.latitude and last_m.longitude == m.longitude):
+            if m.speed < 3 or (last_m.latitude == m.latitude and last_m.longitude == m.longitude):
                 measurements.pop(i)
             else:
                 i += 1

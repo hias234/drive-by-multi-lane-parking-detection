@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 import pickle
+from ground_truth import GroundTruthClass
 
 
 def get_dataset(measure_collections, dataset=None):
@@ -15,8 +16,20 @@ def get_dataset(measure_collections, dataset=None):
 
     for mc in measure_collections:
         dataset[0].append([mc.avg_distance, mc.get_length(), mc.get_duration(), mc.get_nr_of_measures(),
-                           mc.get_distance_variance(), mc.avg_speed])
-        dataset[1].append(mc.get_probable_ground_truth())
+                           mc.get_distance_variance(), mc.avg_speed,
+                           mc.first_measure().distance, mc.measures[len(mc.measures) / 2].distance,
+                           mc.last_measure().distance])
+
+        ground_truth = 'FREE_SPACE'
+        gt = mc.get_probable_ground_truth()
+        if GroundTruthClass.is_parking_car(gt):
+            ground_truth = 'PARKING_CAR'
+        elif GroundTruthClass.is_overtaking_situation(gt):
+            ground_truth = 'OVERTAKING_SITUATION'
+        elif GroundTruthClass.is_parking_motorcycle_or_bicycle(gt):
+            ground_truth = 'PARKING_MC_BC'
+
+        dataset[1].append(ground_truth)
 
     return dataset
 
@@ -35,9 +48,9 @@ def write_to_file(base_path, ml_file_path):
             MeasureCollection.write_arff_file(measure_collections1, ml_file_path)
 
 if __name__ == '__main__':
-    base_path = 'C:\\sw\\master\\collected data\\data_20170718\\'
+    base_path = 'C:\\sw\\master\\collected data\\data_20170720_donau_traffic_jam_per\\'
     # ml_file_path = 'C:\\sw\\master\\00ml.arff'
-    ml_file_path = 'C:\\sw\\master\\00ml.arff'
+    ml_file_path = 'C:\\sw\\master\\20170720ml.arff'
 
 
 
@@ -55,7 +68,7 @@ if __name__ == '__main__':
             measurements1 = Measurement.read(data_file, os.path.join(camera_folder, gt_files[0]))
             measure_collections1 = MeasureCollection.create_measure_collections(measurements1)
             #MeasureCollection.write_arff_file(measure_collections1, ml_file_path)
-            if (i / len(files) < 0.9):
+            if (i / len(files) < 0.7):
                 dataset_train = get_dataset(measure_collections1, dataset=dataset_train)
             else:
                 dataset_test = get_dataset(measure_collections1, dataset=dataset_test)
