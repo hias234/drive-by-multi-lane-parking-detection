@@ -100,7 +100,7 @@ if __name__ == '__main__':
     for file_name, measure_collection in measure_collections_dir.iteritems():
         print file_name
         #MeasureCollection.write_arff_file(measure_collections1, ml_file_path)
-        dataset = get_overtaking_situation_dataset(measure_collection, dataset=dataset)
+        dataset = get_dataset(measure_collection, dataset=dataset)
 
     classifiers = {'mlp': MLPClassifier(), 'tree': DecisionTreeClassifier(), 'knn': KNeighborsClassifier(3),
                    'svc': SVC(), 'gaussian': GaussianProcessClassifier(), 'rbf': RBF(),
@@ -154,18 +154,3 @@ if __name__ == '__main__':
         print 'Precision: ', precision
         recall = (true_pos / (true_pos + false_neg))
         print 'Recall: ', recall
-
-# measurements1 = Measurement.read('C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074500_002138.dat',
-#                                     'C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074500_002138.dat_images_Camera\\00gt1500400602.86.dat')
-# measure_collections1 = MeasureCollection.create_measure_collections(measurements1)
-# MeasureCollection.write_arff_file(measure_collections1, 'C:\\sw\\master\\00ml.arff')
-#
-# measurements2 = Measurement.read('C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074348_696382.dat',
-#                                 'C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074348_696382.dat_images_Camera\\00gt1500398878.87.dat')
-# measure_collections2 = MeasureCollection.create_measure_collections(measurements2)
-# MeasureCollection.write_arff_file(measure_collections2, 'C:\\sw\\master\\00ml.arff')
-#
-# measurements2 = Measurement.read('C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074705_730731.dat',
-#                                 'C:\\sw\\master\\collected data\\data_20170718\\raw_20170718_074705_730731.dat_images_Camera\\00gt1500403346.39.dat')
-# measure_collections2 = MeasureCollection.create_measure_collections(measurements2)
-# MeasureCollection.write_arff_file(measure_collections2, 'C:\\sw\\master\\00ml.arff')
