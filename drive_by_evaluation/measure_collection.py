@@ -31,38 +31,38 @@ class MeasureCollection:
                 cur_number += 1.0
             nr_of_gt_measures[measure.ground_truth.ground_truth_class.name] = cur_number
 
-        if self.get_length() > 1.5 and self.avg_distance > 5 and \
+        if self.get_length() > 1.5 and self.avg_distance > 0.05 and \
                         nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name) is not None and \
                         (nr_of_gt_measures[GroundTruthClass.PARALLEL_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
             return GroundTruthClass.PARALLEL_PARKING_CAR
-        if self.get_length() > 1.0 and self.avg_distance > 5 and \
+        if self.get_length() > 1.0 and self.avg_distance > 0.05 and \
                         nr_of_gt_measures.get(GroundTruthClass.PERPENDICULAR_PARKING_CAR.name) is not None and \
                         (nr_of_gt_measures[GroundTruthClass.PERPENDICULAR_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
             return GroundTruthClass.PERPENDICULAR_PARKING_CAR
-        if self.get_length() > 1.0 and self.avg_distance > 5 and \
+        if self.get_length() > 1.0 and self.avg_distance > 0.05 and \
                         nr_of_gt_measures.get(GroundTruthClass.OTHER_PARKING_CAR.name) is not None and \
                         (nr_of_gt_measures[GroundTruthClass.OTHER_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
             return GroundTruthClass.OTHER_PARKING_CAR
 
-        if self.get_length() > 1.0 and self.avg_distance > 5 and \
+        if self.get_length() > 1.0 and self.avg_distance > 0.05 and \
                         nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_CAR.name) is not None and \
                         (nr_of_gt_measures[GroundTruthClass.OVERTAKEN_CAR.name] / len(self.measures)) > ratio_threshold:
             return GroundTruthClass.OVERTAKEN_CAR
-        if self.get_length() > 1.0 and self.avg_distance > 5 and \
+        if self.get_length() > 1.0 and self.avg_distance > 0.05 and \
                         nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_BICYCLE.name) is not None and \
                         (nr_of_gt_measures[GroundTruthClass.OVERTAKEN_BICYCLE.name] / len(self.measures)) > ratio_threshold:
             return GroundTruthClass.OVERTAKEN_BICYCLE
-        if self.get_length() > 1.0 and self.avg_distance > 5 and \
+        if self.get_length() > 1.0 and self.avg_distance > 0.05 and \
                         nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_MOTORCYCLE.name) is not None and \
                         (nr_of_gt_measures[GroundTruthClass.OVERTAKEN_MOTORCYCLE.name] / len(self.measures)) > ratio_threshold:
             return GroundTruthClass.OVERTAKEN_MOTORCYCLE
 
-        if self.get_length() > 0.1 and self.avg_distance > 5 and \
+        if self.get_length() > 0.1 and self.avg_distance > 0.05 and \
                         nr_of_gt_measures.get(GroundTruthClass.PARKING_BICYCLE.name) is not None and \
                         (nr_of_gt_measures[GroundTruthClass.PARKING_BICYCLE.name] / len(self.measures)) > ratio_threshold:
             return GroundTruthClass.PARKING_BICYCLE
 
-        if self.get_length() > 0.1 and self.avg_distance > 5 and \
+        if self.get_length() > 0.1 and self.avg_distance > 0.05 and \
                         nr_of_gt_measures.get(GroundTruthClass.PARKING_MOTORCYCLE.name) is not None and \
                         (nr_of_gt_measures[GroundTruthClass.PARKING_MOTORCYCLE.name] / len(self.measures)) > ratio_threshold:
             return GroundTruthClass.PARKING_MOTORCYCLE
@@ -138,7 +138,7 @@ class MeasureCollection:
 
     @staticmethod
     def create_measure_collections(measurements):
-        abs_to_avg_distance_threshold = 90
+        separation_threshold = 0.9
         min_measure_count = 1
 
         plateaus = []
@@ -147,7 +147,7 @@ class MeasureCollection:
         last_plateau_timestamp = None
         for measure in measurements:
             if cur_plateau.is_empty() or \
-                    (abs(last_plateau_distance - measure.distance) < abs_to_avg_distance_threshold and
+                    (abs(last_plateau_distance - measure.distance) < separation_threshold and
                      abs(last_plateau_timestamp - measure.timestamp) < 1.0):
                 cur_plateau.add_measure(measure)
             else:
@@ -163,27 +163,37 @@ class MeasureCollection:
 
         print 'found plateaus', len(plateaus)
 
-        #plateaus = self.merge_plateaus(plateaus)
+        plateaus = MeasureCollection.merge_measure_collections(plateaus)
 
         return plateaus
 
     @staticmethod
-    def merge_plateaus(plateaus):
-        threshold_distance_between_ends = 50
+    def merge_measure_collections(measure_collections):
+        if len(measure_collections) > 0:
+            i = 1
+            last_length = measure_collections[0].get_length()
+            last_distance = measure_collections[0].avg_distance
+            if last_distance <= 0.02:
+                last_distance = 100
+            while i < len(measure_collections):
+                length = measure_collections[i].get_length()
+                distance = measure_collections[i].avg_distance
+                if distance <= 0.02:
+                    distance = 100
+                if (
+                    #(last_length < 0.2 and length < 0.2) or
+                    (distance > 10 and last_distance > 10)
+                ):
+                    measure_collections[i - 1].add_measure_collection(measure_collections[i])
+                    measure_collections.pop(i)
+                else:
+                    last_length = length
+                    last_distance = distance
+                    i += 1
 
-        i = 1
-        while i < len(plateaus):
-            distance_between_ends = abs(plateaus[i-1].last_measure().distance - plateaus[i].first_measure().distance)
-            # print distance_between_ends
-            if distance_between_ends <= threshold_distance_between_ends:
-                plateaus[i-1].add_measure_collection(plateaus[i])
-                plateaus.pop(i)
-            else:
-                i += 1
+            print 'merged plateaus', len(measure_collections)
 
-        print 'merged plateaus', len(plateaus)
-
-        return plateaus
+        return measure_collections
 
     @staticmethod
     def write_to_file(path, measure_collections):
@@ -220,7 +230,7 @@ class MeasureCollection:
 
     def is_maybe_parking_car(self):
         return self.get_length() > 0.7 and self.avg_speed > 0.5 and \
-               self.avg_distance > 10.0
+               self.avg_distance > 0.1
 
     @staticmethod
     def write_arff_file(measure_collections, path):
@@ -256,3 +266,22 @@ class MeasureCollection:
                     arff_file.write(",")
                     arff_file.write(measure_collection.get_probable_ground_truth().name)
                     arff_file.write("\n")
+
+    @staticmethod
+    def read_directory(base_path):
+        measure_collections = {}
+
+        for f in os.listdir(base_path):
+            if os.path.isdir(os.path.join(base_path, f)) and not f.endswith('_images_Camera'):
+                sub_dir_measure_collections = MeasureCollection.read_directory(os.path.join(base_path, f))
+                measure_collections.update(sub_dir_measure_collections)
+            elif os.path.isfile(os.path.join(base_path, f)) and f.endswith('.dat'):
+                data_file = os.path.join(base_path, f)
+                camera_folder = data_file + '_images_Camera\\'
+                gt_files = [gt_f for gt_f in os.listdir(camera_folder) if gt_f.startswith('00gt')]
+                if len(gt_files) > 0:
+                    measurements = Measurement.read(data_file, os.path.join(camera_folder, gt_files[0]))
+                    measure_collections_f = MeasureCollection.create_measure_collections(measurements)
+                    measure_collections[data_file] = measure_collections_f
+
+        return measure_collections

@@ -34,7 +34,7 @@ class Measurement:
                 sensor_type = row[0]
                 timestamp = float(row[1])
                 if sensor_type == 'LidarLite':
-                    distances.append(LidarLiteMeasurement(timestamp, float(row[2])))
+                    distances.append(LidarLiteMeasurement(timestamp, float(row[2]) / 100.0))
                 elif sensor_type == 'GPS':
                     if row[2] != '0.0' and row[3] != '0.0' and \
                             row[2] != 'nan' and row[3] != 'nan' and \
@@ -93,8 +93,30 @@ class Measurement:
 
         print 'seconds of measurement', measurements[len(measurements) - 1].timestamp - measurements[0].timestamp
 
+        measurements = Measurement.remove_outliers(measurements)
+
         return Measurement.remove_when_the_car_stands(measurements)
         #return measurements
+
+    @staticmethod
+    def remove_outliers(measurements):
+        last_m = measurements[0]
+        i = 1
+        while i < len(measurements) - 1:
+            m = measurements[i]
+            next_m = measurements[i+1]
+
+            distance_to_last = m.distance - last_m.distance
+            distance_to_next = m.distance - next_m.distance
+
+            if abs(distance_to_last) > 0.3 and abs(distance_to_last - distance_to_next) < 0.1:
+                measurements.pop(i)
+            else:
+                i += 1
+            last_m = m
+
+        print 'filtered outliers', len(measurements)
+        return measurements
 
     @staticmethod
     def remove_when_the_car_stands(measurements):

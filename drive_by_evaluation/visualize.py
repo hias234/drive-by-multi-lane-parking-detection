@@ -66,7 +66,7 @@ class MeasurementVisualization:
         if fig is None:
             fig = plt.figure(1)
         xs = [raw.timestamp for raw in measurements]
-        ys = [raw.distance for raw in measurements]
+        ys = [raw.distance * 100 for raw in measurements]
         speeds = [raw.speed * 100 * 3.6 for raw in measurements]
         cs = self.get_color_list(measurements)
 
@@ -120,7 +120,7 @@ class MeasurementVisualization:
             self.show_distance_signal_scatter(measure_collection.measures, fig=fig)
             # print len(plateau.measures), plateau.avg_distance, plateau.get_length(), plateau.get_distance_variance()
             xs = [measure_collection.first_measure().timestamp, measure_collection.last_measure().timestamp]
-            ys = [measure_collection.first_measure().distance, measure_collection.last_measure().distance]
+            ys = [measure_collection.first_measure().distance * 100, measure_collection.last_measure().distance * 100]
             # ys = [plateau.avg_distance, plateau.avg_distance]
             probable_gt = measure_collection.get_probable_ground_truth()
             color = 'black'
@@ -142,18 +142,11 @@ if __name__ == '__main__':
     visualization = MeasurementVisualization()
     base_path = 'C:\\sw\\master\\collected data\\data_20170720_donau_traffic_jam_per\\'
     # base_path = 'C:\\sw\\master\\collected data\\data_20170718_tunnel\\'
-    files = sorted([f for f in os.listdir(base_path) if os.path.isfile(os.path.join(base_path, f))])
 
+    measure_collections_dir = MeasureCollection.read_directory(base_path)
     i = 1
-    for f in files:
-        data_file = os.path.join(base_path, f)
-        camera_folder = os.path.join(base_path, f) + '_images_Camera\\'
-        gt_files = [gt_f for gt_f in os.listdir(camera_folder) if gt_f.startswith('00gt')]
-        if (len(gt_files) > 0):
-            print gt_files[0]
-            measurements1 = Measurement.read(data_file, os.path.join(camera_folder, gt_files[0]))
-            measure_collections1 = MeasureCollection.create_measure_collections(measurements1)
-            visualization.show_distances_plus_segmentation(measure_collections1, fig=plt.figure(i))
+    for file_name, measure_collection in measure_collections_dir.iteritems():
+        visualization.show_distances_plus_segmentation(measure_collection, fig=plt.figure(i))
         i += 1
     #measure_collections = MeasureCollection.read_from_file('C:\\sw\\master\\collected data\\data_20170707\\tagged_mc_20170705_065613_869794.dat')
     #visualization.show_distances_plus_segmentation(measure_collections)
