@@ -103,7 +103,7 @@ if __name__ == '__main__':
         dataset = get_dataset(measure_collection, dataset=dataset)
 
     classifiers = {'mlp': MLPClassifier(), 'tree': DecisionTreeClassifier(), 'knn': KNeighborsClassifier(3),
-                   'svc': SVC(), 'gaussian': GaussianProcessClassifier(), 'rbf': RBF(),
+                   'svc': SVC(), 'gaussian': GaussianProcessClassifier(),
                    'randomforest': RandomForestClassifier()}
     for name, clf in classifiers.iteritems():
         scorer = MultiScorer({

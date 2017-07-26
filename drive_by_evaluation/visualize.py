@@ -140,7 +140,7 @@ if __name__ == '__main__':
     #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
     #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
     visualization = MeasurementVisualization()
-    base_path = 'C:\\sw\\master\\collected data\\data_20170720_donau_traffic_jam_per\\'
+    base_path = 'C:\\sw\\master\\collected data\\\data_20170725_linz\\'
     # base_path = 'C:\\sw\\master\\collected data\\data_20170718_tunnel\\'
 
     measure_collections_dir = MeasureCollection.read_directory(base_path)
