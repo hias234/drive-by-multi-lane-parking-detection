@@ -132,7 +132,16 @@ class MeasurementVisualization:
                 color = 'yellow'
             plt.plot(xs, ys, color=color)
             plt.scatter(xs, ys, color='black', s=5)
+
+            plt.scatter([measure_collection.first_measure().timestamp], [measure_collection.get_acceleration() * 1000], color='orange')
         fig.show()
+
+    def show_distance_for_class(self, measure_collections, clazz, fig=None):
+        if fig is None:
+            fig = plt.figure(9)
+        for measure_collection in measure_collections:
+            if measure_collection.get_probable_ground_truth() == clazz:
+                self.show_distance_signal_scatter(measure_collection.measures, fig=fig)
 
 if __name__ == '__main__':
     #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
@@ -142,6 +151,7 @@ if __name__ == '__main__':
     visualization = MeasurementVisualization()
     # base_path = 'C:\\sw\\master\\collected data\\data_20170725_linz\\'
     base_path = 'C:\\sw\\master\\collected data\\data_20170718_tunnel\\'
+    #base_path = 'C:\\sw\\master\\collected data\\'
 
     options = {'mc_min_speed': 4.0, 'mc_merge': False,
                'mc_separation_threshold': 1.0, 'mc_min_measure_count': 2,
@@ -153,6 +163,7 @@ if __name__ == '__main__':
     i = 1
     for file_name, measure_collection in measure_collections_dir.iteritems():
         visualization.show_distances_plus_segmentation(measure_collection, fig=plt.figure(i))
+        #visualization.show_distance_for_class(measure_collection, GroundTruthClass.OVERTAKEN_CAR, fig=plt.figure(i))
         i += 1
     #measure_collections = MeasureCollection.read_from_file('C:\\sw\\master\\collected data\\data_20170707\\tagged_mc_20170705_065613_869794.dat')
     #visualization.show_distances_plus_segmentation(measure_collections)

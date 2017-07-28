@@ -24,12 +24,8 @@ class MeasureCollection:
 
         nr_of_gt_measures = {}
         for measure in self.measures:
-            cur_number = nr_of_gt_measures.get(measure.ground_truth.ground_truth_class.name)
-            if cur_number is None:
-                cur_number = 1.0
-            else:
-                cur_number += 1.0
-            nr_of_gt_measures[measure.ground_truth.ground_truth_class.name] = cur_number
+            nr_of_gt_measures[measure.ground_truth.ground_truth_class.name] = \
+                nr_of_gt_measures.get(measure.ground_truth.ground_truth_class.name, 0) + 1
 
         if self.get_length() > 1.5 and self.avg_distance < 10 and \
                         nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name) is not None and \
