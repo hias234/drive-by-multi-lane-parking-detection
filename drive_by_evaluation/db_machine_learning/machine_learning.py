@@ -34,6 +34,12 @@ def get_dataset(measure_collections, dataset=None):
                     mc.first_measure().distance, mc.measures[len(mc.measures) / 2].distance,
                     mc.last_measure().distance]
 
+        for interval, surrounding_mc in mc.time_surrounding_mcs.iteritems():
+            features.append(surrounding_mc.avg_distance)
+            features.append(surrounding_mc.avg_speed)
+            features.append(surrounding_mc.length)
+            features.append(surrounding_mc.get_acceleration())
+
         ground_truth = 'FREE_SPACE'
         gt = mc.get_probable_ground_truth()
         if GroundTruthClass.is_parking_car(gt):
@@ -55,8 +61,14 @@ def get_dataset_parking_cars(measure_collections, dataset=None):
     for mc in measure_collections:
         features = [mc.avg_distance, mc.get_length(), mc.get_duration(), mc.get_nr_of_measures(),
                     mc.get_distance_variance(), mc.avg_speed, mc.get_acceleration(),
-                    mc.first_measure().distance, mc.measures[len(mc.measures) / 2].distance,
-                    mc.last_measure().distance]
+                    mc.first_measure().distance, mc.measures[len(mc.measures) / 2].distance, mc.last_measure().distance
+                    ]
+
+        for interval, surrounding_mc in mc.time_surrounding_mcs.iteritems():
+            features.append(surrounding_mc.avg_distance)
+            features.append(surrounding_mc.avg_speed)
+            features.append(surrounding_mc.length)
+            features.append(surrounding_mc.get_acceleration())
 
         ground_truth = 'NO_PARKING_CAR'
         gt = mc.get_probable_ground_truth()
@@ -112,12 +124,16 @@ def write_to_file(base_path, ml_file_path):
 
 if __name__ == '__main__':
     base_path = 'C:\\sw\\master\\collected data\\'
+    #base_path = 'C:\\sw\\master\\collected data\\data_20170718_tunnel\\'
     # ml_file_path = 'C:\\sw\\master\\00ml.arff'
     ml_file_path = 'C:\\sw\\master\\20170718ml.arff'
 
     options = {'mc_min_speed': 4.0, 'mc_merge': True,
                'mc_separation_threshold': 1.0, 'mc_min_measure_count': 2,
-               'outlier_threshold_distance': 0.3, 'outlier_threshold_diff': 0.1
+               'mc_surrounding_times_s': [1.0, 3.0, 5.0, 10.0],
+               #'mc_surrounding_m': [50.0, 100.0],
+               'outlier_threshold_distance': 0.3, 'outlier_threshold_diff': 0.1,
+               '1cm_replacement_value': 10.01
               }
 
     dataset = None

@@ -155,6 +155,7 @@ if __name__ == '__main__':
 
     options = {'mc_min_speed': 4.0, 'mc_merge': False,
                'mc_separation_threshold': 1.0, 'mc_min_measure_count': 2,
+               'mc_surrounding_times_s': [2.0, 5.0],
                'outlier_threshold_distance': 0.3, 'outlier_threshold_diff': 0.1,
                '1cm_replacement_value': 10.01
                }

@@ -18,6 +18,8 @@ class MeasureCollection:
         self.center_latitude = 0.0
         self.center_longitude = 0.0
         self.variance = -1.0
+        self.time_surrounding_mcs = dict()
+        self.length_surrounding_mcs = dict()
 
     def get_probable_ground_truth(self):
         ratio_threshold = 0.6
@@ -67,6 +69,9 @@ class MeasureCollection:
 
     def is_empty(self):
         return len(self.measures) == 0
+
+    def avg_timestamp(self):
+        return self.first_measure().timestamp + (self.last_measure().timestamp - self.first_measure().timestamp) / 2
 
     def first_measure(self):
         return self.measures[0]
@@ -118,10 +123,12 @@ class MeasureCollection:
         return len(self.measures)
 
     def get_acceleration(self):
-        if self.last_measure().timestamp == self.first_measure().timestamp:
-            return 0
-        return ((self.last_measure().speed - self.first_measure().speed) /
-                (self.last_measure().timestamp - self.first_measure().timestamp))
+        if len(self.measures) > 0:
+            if self.last_measure().timestamp == self.first_measure().timestamp:
+                return 0
+            return ((self.last_measure().speed - self.first_measure().speed) /
+                    (self.last_measure().timestamp - self.first_measure().timestamp))
+        return 0
 
     def get_distance_variance(self):
         if self.variance != -1.0:
@@ -135,6 +142,34 @@ class MeasureCollection:
 
     def get_duration(self):
         return self.last_measure().timestamp - self.first_measure().timestamp
+
+    def add_time_surrounding_measure_collection(self, measure_collections, surrounding_time_in_s):
+        surrounding_mc = MeasureCollection()
+
+        start_timestamp = self.avg_timestamp() - surrounding_time_in_s
+        stop_timestamp = self.avg_timestamp() - surrounding_time_in_s
+
+        for measure_collection in measure_collections:
+            if measure_collection.avg_timestamp() > start_timestamp:
+                if measure_collection.avg_timestamp() < stop_timestamp:
+                    surrounding_mc.add_measure_collection(measure_collection)
+                else:
+                    break
+
+        self.time_surrounding_mcs[surrounding_time_in_s] = surrounding_mc
+
+    # def add_length_surrounding_measure_collection(self, measure_collections, surrounding_m):
+    #     surrounding_mc = MeasureCollection()
+    #
+    #     for measure_collection in measure_collections:
+    #         start_length =
+    #         if measure_collection.avg_timestamp() > start_timestamp:
+    #             if measure_collection.avg_timestamp() < stop_timestamp:
+    #                 surrounding_mc.add_measure_collection(measure_collection)
+    #             else:
+    #                 break
+    #
+    #     self.length_surrounding_mcs[surrounding_m] = surrounding_mc
 
     @staticmethod
     def create_measure_collections(measurements, options=None):
@@ -171,6 +206,11 @@ class MeasureCollection:
             measure_collections = MeasureCollection.filter_standing_situations(measure_collections, min_speed)
         if options.get('mc_merge', False):
             measure_collections = MeasureCollection.merge_measure_collections(measure_collections)
+
+        surrounding_mc_times = options.get('mc_surrounding_times_s', [])
+        for surrounding_mc_time in surrounding_mc_times:
+            for measure_collection in measure_collections:
+                measure_collection.add_time_surrounding_measure_collection(measure_collections, surrounding_mc_time)
 
         return measure_collections
 
