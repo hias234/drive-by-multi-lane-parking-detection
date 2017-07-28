@@ -23,6 +23,7 @@ import random
 #from costcla.datasets import load_creditscoring1
 #from costcla.utils import cross_validation
 
+
 def get_dataset(measure_collections, dataset=None):
     if dataset is None:
         dataset = DataSet(['FREE_SPACE', 'PARKING_CAR', 'OVERTAKING_SITUATION', 'PARKING_MC_BC'])
@@ -41,6 +42,26 @@ def get_dataset(measure_collections, dataset=None):
             ground_truth = 'OVERTAKING_SITUATION'
         elif GroundTruthClass.is_parking_motorcycle_or_bicycle(gt):
             ground_truth = 'PARKING_MC_BC'
+
+        dataset.append_sample(features, ground_truth)
+
+    return dataset
+
+
+def get_dataset_parking_cars(measure_collections, dataset=None):
+    if dataset is None:
+        dataset = DataSet(['PARKING_CAR', 'NO_PARKING_CAR'])
+
+    for mc in measure_collections:
+        features = [mc.avg_distance, mc.get_length(), mc.get_duration(), mc.get_nr_of_measures(),
+                    mc.get_distance_variance(), mc.avg_speed, mc.get_acceleration(),
+                    mc.first_measure().distance, mc.measures[len(mc.measures) / 2].distance,
+                    mc.last_measure().distance]
+
+        ground_truth = 'NO_PARKING_CAR'
+        gt = mc.get_probable_ground_truth()
+        if GroundTruthClass.is_parking_car(gt):
+            ground_truth = 'PARKING_CAR'
 
         dataset.append_sample(features, ground_truth)
 
@@ -94,16 +115,22 @@ if __name__ == '__main__':
     # ml_file_path = 'C:\\sw\\master\\00ml.arff'
     ml_file_path = 'C:\\sw\\master\\20170718ml.arff'
 
+    options = {'mc_min_speed': 4.0, 'mc_merge': True,
+               'mc_separation_threshold': 1.0, 'mc_min_measure_count': 2,
+               'outlier_threshold_distance': 0.3, 'outlier_threshold_diff': 0.1
+              }
+
     dataset = None
     #write_to_file(base_path, ml_file_path)
-    measure_collections_dir = MeasureCollection.read_directory(base_path)
+    measure_collections_dir = MeasureCollection.read_directory(base_path, options=options)
     for file_name, measure_collection in measure_collections_dir.iteritems():
         print file_name
         #MeasureCollection.write_arff_file(measure_collections1, ml_file_path)
-        dataset = get_dataset(measure_collection, dataset=dataset)
+        dataset = get_dataset_parking_cars(measure_collection, dataset=dataset)
 
     classifiers = {'mlp': MLPClassifier(), 'tree': DecisionTreeClassifier(), 'knn': KNeighborsClassifier(3),
-                   'svc': SVC(), 'gaussian': GaussianProcessClassifier(),
+                   'svc': SVC(),
+                   #'gaussian': GaussianProcessClassifier(),
                    'randomforest': RandomForestClassifier()}
     for name, clf in classifiers.iteritems():
         scorer = MultiScorer({

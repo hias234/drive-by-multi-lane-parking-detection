@@ -140,10 +140,16 @@ if __name__ == '__main__':
     #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
     #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
     visualization = MeasurementVisualization()
-    base_path = 'C:\\sw\\master\\collected data\\\data_20170725_linz\\'
-    # base_path = 'C:\\sw\\master\\collected data\\data_20170718_tunnel\\'
+    # base_path = 'C:\\sw\\master\\collected data\\data_20170725_linz\\'
+    base_path = 'C:\\sw\\master\\collected data\\data_20170718_tunnel\\'
 
-    measure_collections_dir = MeasureCollection.read_directory(base_path)
+    options = {'mc_min_speed': 4.0, 'mc_merge': False,
+               'mc_separation_threshold': 1.0, 'mc_min_measure_count': 2,
+               'outlier_threshold_distance': 0.3, 'outlier_threshold_diff': 0.1,
+               '1cm_replacement_value': 10.01
+               }
+
+    measure_collections_dir = MeasureCollection.read_directory(base_path, options=options)
     i = 1
     for file_name, measure_collection in measure_collections_dir.iteritems():
         visualization.show_distances_plus_segmentation(measure_collection, fig=plt.figure(i))

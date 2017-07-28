@@ -22,7 +22,12 @@ class Measurement:
         self.ground_truth = ground_truth
 
     @staticmethod
-    def read(file_path, ground_truth_path):
+    def read(file_path, ground_truth_path, options=None):
+        if options is None:
+            options = dict()
+
+        replacement_for_1cm = options.get('1cm_replacement_value', 0.01)
+
         gps_measurements = []
         distances = []
 
@@ -34,7 +39,10 @@ class Measurement:
                 sensor_type = row[0]
                 timestamp = float(row[1])
                 if sensor_type == 'LidarLite':
-                    distances.append(LidarLiteMeasurement(timestamp, float(row[2]) / 100.0))
+                    distance_value = float(row[2]) / 100
+                    if distance_value == 0.01:
+                        distance_value = replacement_for_1cm
+                    distances.append(LidarLiteMeasurement(timestamp, distance_value))
                 elif sensor_type == 'GPS':
                     if row[2] != '0.0' and row[3] != '0.0' and \
                             row[2] != 'nan' and row[3] != 'nan' and \
@@ -45,6 +53,9 @@ class Measurement:
                     print 'unknown sensor', sensor_type
                 i += 1
 
+        print 'read gps measures', len(gps_measurements)
+        print 'read distance measures', len(distances)
+
         ground_truth = []
         if ground_truth_path is not None:
             ground_truth = GroundTruth.read_from_file(ground_truth_path)
@@ -53,9 +64,6 @@ class Measurement:
         while gps_measurements[0].timestamp > distances[distance_index].timestamp:
             distance_index += 1
         gps_index = 0
-
-        print 'read gps measures', len(gps_measurements)
-        print 'read distance measures', len(distances)
 
         measurements = []
         while gps_index < len(gps_measurements) - 1:
@@ -93,13 +101,15 @@ class Measurement:
 
         print 'seconds of measurement', measurements[len(measurements) - 1].timestamp - measurements[0].timestamp
 
-        measurements = Measurement.remove_outliers(measurements)
+        outlier_threshold_distance = options.get('outlier_threshold_distance')
+        outlier_threshold_diff = options.get('outlier_threshold_diff')
+        if outlier_threshold_distance is not None:
+            measurements = Measurement.remove_outliers(measurements, outlier_threshold_distance, outlier_threshold_diff)
 
-        return Measurement.remove_when_the_car_stands(measurements)
-        #return measurements
+        return measurements
 
     @staticmethod
-    def remove_outliers(measurements):
+    def remove_outliers(measurements, outlier_threshold_distance, outlier_threshold_diff):
         last_m = measurements[0]
         i = 1
         while i < len(measurements) - 1:
@@ -109,28 +119,14 @@ class Measurement:
             distance_to_last = m.distance - last_m.distance
             distance_to_next = m.distance - next_m.distance
 
-            if abs(distance_to_last) > 0.3 and abs(distance_to_last - distance_to_next) < 0.1:
+            if (abs(distance_to_last) > outlier_threshold_distance and
+                        abs(distance_to_last - distance_to_next) < outlier_threshold_diff):
                 measurements.pop(i)
             else:
                 i += 1
             last_m = m
 
         print 'filtered outliers', len(measurements)
-        return measurements
-
-    @staticmethod
-    def remove_when_the_car_stands(measurements):
-        last_m = measurements[0]
-        i = 1
-        while i < len(measurements):
-            m = measurements[i]
-            if m.speed < 4.0 or (last_m.latitude == m.latitude and last_m.longitude == m.longitude):
-                measurements.pop(i)
-            else:
-                i += 1
-            last_m = m
-
-        print 'filtered standing situations', len(measurements)
         return measurements
 
 
