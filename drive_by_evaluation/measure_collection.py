@@ -147,11 +147,11 @@ class MeasureCollection:
         surrounding_mc = MeasureCollection()
 
         start_timestamp = self.avg_timestamp() - surrounding_time_in_s
-        stop_timestamp = self.avg_timestamp() - surrounding_time_in_s
+        stop_timestamp = self.avg_timestamp()  # + surrounding_time_in_s
 
         for measure_collection in measure_collections:
             if measure_collection.avg_timestamp() > start_timestamp:
-                if measure_collection.avg_timestamp() < stop_timestamp:
+                if measure_collection.avg_timestamp() <= stop_timestamp:
                     surrounding_mc.add_measure_collection(measure_collection)
                 else:
                     break

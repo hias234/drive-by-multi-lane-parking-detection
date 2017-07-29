@@ -91,6 +91,12 @@ def get_overtaking_situation_dataset(measure_collections, dataset=None):
                         mc.first_measure().distance, mc.measures[len(mc.measures) / 2].distance,
                         mc.last_measure().distance]
 
+            for interval, surrounding_mc in mc.time_surrounding_mcs.iteritems():
+                features.append(surrounding_mc.avg_distance)
+                features.append(surrounding_mc.avg_speed)
+                features.append(surrounding_mc.length)
+                features.append(surrounding_mc.get_acceleration())
+
             ground_truth = 'NO_OVERTAKING_SITUATION'
             gt = mc.get_probable_ground_truth()
             if GroundTruthClass.is_overtaking_situation(gt):
@@ -100,10 +106,10 @@ def get_overtaking_situation_dataset(measure_collections, dataset=None):
             if not GroundTruthClass.is_overtaking_situation(gt) and random.randint(0, 10) < 10:
                 dataset.append_sample(features, ground_truth)
             elif GroundTruthClass.is_overtaking_situation(gt):
-                #i = 0
-                #while i < 1000:
-                dataset.append_sample(features, ground_truth)
-                    #i += 1
+                i = 0
+                while i < 3:
+                    dataset.append_sample(features, ground_truth)
+                    i += 1
 
     return dataset
 
@@ -122,27 +128,45 @@ def write_to_file(base_path, ml_file_path):
             MeasureCollection.write_arff_file(measure_collections1, ml_file_path)
 
 
+def filter_acceleration_situations(measure_collections):
+    i = 0
+    for measure_collection in measure_collections:
+        #print measure_collection.time_surrounding_mcs.get(10.0).get_acceleration()
+        if measure_collection.time_surrounding_mcs.get(10.0).get_acceleration() < -0.2:
+            measure_collections.pop(i)
+            #print measure_collection.time_surrounding_mcs.get(10.0).get_acceleration()
+        else:
+            i += 1
+
+    return measure_collections
+
+
 if __name__ == '__main__':
     base_path = 'C:\\sw\\master\\collected data\\'
     #base_path = 'C:\\sw\\master\\collected data\\data_20170718_tunnel\\'
     # ml_file_path = 'C:\\sw\\master\\00ml.arff'
     ml_file_path = 'C:\\sw\\master\\20170718ml.arff'
 
-    options = {'mc_min_speed': 4.0, 'mc_merge': True,
-               'mc_separation_threshold': 1.0, 'mc_min_measure_count': 2,
-               'mc_surrounding_times_s': [1.0, 3.0, 5.0, 10.0],
-               #'mc_surrounding_m': [50.0, 100.0],
-               'outlier_threshold_distance': 0.3, 'outlier_threshold_diff': 0.1,
-               '1cm_replacement_value': 10.01
-              }
+    options = {
+       'mc_min_speed': 4.0, 'mc_merge': True,
+       'mc_separation_threshold': 1.0, 'mc_min_measure_count': 2,
+       'mc_surrounding_times_s': [10.0],
+       #'mc_surrounding_m': [50.0, 100.0],
+       'outlier_threshold_distance': 0.3, 'outlier_threshold_diff': 0.1,
+       '1cm_replacement_value': 10.01
+
+       }
 
     dataset = None
     #write_to_file(base_path, ml_file_path)
     measure_collections_dir = MeasureCollection.read_directory(base_path, options=options)
     for file_name, measure_collection in measure_collections_dir.iteritems():
         print file_name
+        #print len(measure_collection)
+        measure_collection = filter_acceleration_situations(measure_collection)
+        #print 'filtered', len(measure_collection)
         #MeasureCollection.write_arff_file(measure_collections1, ml_file_path)
-        dataset = get_dataset_parking_cars(measure_collection, dataset=dataset)
+        dataset = get_overtaking_situation_dataset(measure_collection, dataset=dataset)
 
     classifiers = {'mlp': MLPClassifier(), 'tree': DecisionTreeClassifier(), 'knn': KNeighborsClassifier(3),
                    'svc': SVC(),
