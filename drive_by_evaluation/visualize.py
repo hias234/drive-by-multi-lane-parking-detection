@@ -10,6 +10,7 @@ import numpy as np
 import scipy
 from scipy.signal import butter, lfilter
 import matplotlib.pyplot as plt
+import matplotlib
 import gmplot
 from ground_truth import GroundTruthClass
 from mpl_toolkits.mplot3d import Axes3D
@@ -20,9 +21,11 @@ from measure_collection import MeasureCollection
 
 class MeasurementVisualization:
 
-    def show_distance_signal(self, measurements, fig=None):
+    def show_distance_signal(self, measurements, fig=None, base_timestamp=None, color='b'):
         if fig is None:
             fig = plt.figure(4)
+        if base_timestamp is None:
+            base_timestamp = 0
         # xs = []
         # length = 0
         # for index in range(1, len(measurements)):
@@ -32,10 +35,12 @@ class MeasurementVisualization:
         #                     (measurements[index].latitude, measurements[index].longitude)
         #                 ).meters
         # xs.append(length)
-        xs = [raw.timestamp for raw in measurements]
+        xs = [raw.timestamp - base_timestamp for raw in measurements]
         ys = [raw.distance for raw in measurements]
 
-        plt.plot(xs, ys)
+        plt.plot(xs, ys, c=color)
+        plt.ylabel('Distance [m]')
+        plt.xlabel('Time [s]')
 
         #median_distance = np.mean(ys)
         #plt.plot([xs[0], xs[len(xs) - 1]], [median_distance, median_distance])
@@ -62,16 +67,21 @@ class MeasurementVisualization:
 
         fig.show()
 
-    def show_distance_signal_scatter(self, measurements, fig=None):
+    def show_distance_signal_scatter(self, measurements, fig=None, base_timestamp=None):
         if fig is None:
             fig = plt.figure(1)
-        xs = [raw.timestamp for raw in measurements]
-        ys = [raw.distance * 100 for raw in measurements]
-        speeds = [raw.speed * 100 * 3.6 for raw in measurements]
+        if base_timestamp is None:
+            base_timestamp = 0
+
+        xs = [raw.timestamp - base_timestamp for raw in measurements]
+        ys = [raw.distance for raw in measurements]
+        #speeds = [raw.speed * 100 * 3.6 for raw in measurements]
         cs = self.get_color_list(measurements)
 
         plt.scatter(xs, ys, c=cs)
-        plt.plot(xs, speeds, c='blue')
+        #plt.plot(xs, speeds, c='blue')
+        plt.ylabel('distance [m]', fontsize=16)
+        plt.xlabel('time [s]', fontsize=16)
 
         fig.show()
 
@@ -118,10 +128,8 @@ class MeasurementVisualization:
             fig = plt.figure(8)
         for measure_collection in measure_collections:
             self.show_distance_signal_scatter(measure_collection.measures, fig=fig)
-            # print len(plateau.measures), plateau.avg_distance, plateau.get_length(), plateau.get_distance_variance()
             xs = [measure_collection.first_measure().timestamp, measure_collection.last_measure().timestamp]
-            ys = [measure_collection.first_measure().distance * 100, measure_collection.last_measure().distance * 100]
-            # ys = [plateau.avg_distance, plateau.avg_distance]
+            ys = [measure_collection.first_measure().distance, measure_collection.last_measure().distance]
             probable_gt = measure_collection.get_probable_ground_truth()
             color = 'black'
             if GroundTruthClass.is_parking_car(probable_gt):
@@ -133,39 +141,84 @@ class MeasurementVisualization:
             plt.plot(xs, ys, color=color)
             plt.scatter(xs, ys, color='black', s=5)
 
-            plt.scatter([measure_collection.first_measure().timestamp], [measure_collection.get_acceleration() * 1000], color='orange')
+            #plt.scatter([measure_collection.first_measure().timestamp], [measure_collection.get_acceleration() * 1000], color='orange')
         fig.show()
 
-    def show_distance_for_class(self, measure_collections, clazz, fig=None):
+    def show_distance_for_class(self, measure_collections, classes, fig=None):
         if fig is None:
             fig = plt.figure(9)
+        i = 0
         for measure_collection in measure_collections:
-            if measure_collection.get_probable_ground_truth() == clazz:
-                self.show_distance_signal_scatter(measure_collection.measures, fig=fig)
+            if measure_collection.get_probable_ground_truth() in classes:
+                j = 0 if i < 10 else i - 10
+                base_timestamp = measure_collections[j].first_measure().timestamp
+                stop = len(measure_collections) if i + 10 >= len(measure_collections) else i + 10
+                measures = []
+                while j <= stop:
+                    measures.extend(measure_collections[j].measures)
+                    j += 1
+                self.show_distance_signal(measures, fig=fig, base_timestamp=base_timestamp, color='black')
+                #self.show_distance_signal(measure_collections[i].measures, fig=fig, color='g',
+                #                                  base_timestamp=base_timestamp)
+                j = 0 if i < 10 else i - 10
+                while j <= stop:
+                    if measure_collections[j].get_probable_ground_truth() in classes:
+                        self.show_distance_signal(measure_collections[j].measures, fig=fig, color='r', base_timestamp=base_timestamp)
+                    j += 1
+                fig = plt.figure(i*100 + i*10 + i)
+            i += 1
+
+    def show_distance_histogram_length(self, measure_collections, fig=None):
+        if fig is None:
+            fig = plt.figure(10)
+        x = [measure_collection.length for measure_collection in measure_collections]
+        n, bins, patches = plt.hist(x, bins=100)
+        plt.xlabel('Length [m]')
+        plt.ylabel('Count')
+
 
 if __name__ == '__main__':
-    #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat',
-    #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_065613_869794.dat_images_Camera\\00gt1499703007.98.dat')
-    #measurements = Measurement.read('C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat',
-    #                                'C:\\sw\\master\\collected data\\data\\raw_20170705_064859_283466.dat_images_Camera\\00gt1499791938.51.dat')
     visualization = MeasurementVisualization()
     # base_path = 'C:\\sw\\master\\collected data\\data_20170725_linz\\'
-    base_path = 'C:\\sw\\master\\collected data\\data_20170718_tunnel\\'
-    #base_path = 'C:\\sw\\master\\collected data\\'
+    #base_path = 'C:\\sw\\master\\collected data\\data_20170725_linz\\'
+    base_path = 'C:\\sw\\master\\collected data\\'
 
-    options = {'mc_min_speed': 4.0, 'mc_merge': False,
-               'mc_separation_threshold': 1.0, 'mc_min_measure_count': 2,
-               'mc_surrounding_times_s': [2.0, 5.0],
-               'outlier_threshold_distance': 0.3, 'outlier_threshold_diff': 0.1,
+    font = {'family': 'normal',
+            'weight': 'normal',
+            'size': 30}
+
+    matplotlib.rc('font', **font)
+
+    options = {'mc_min_speed': 4.0,
+               'mc_merge': True,
+               'mc_separation_threshold': 1.0,
+               'mc_min_measure_count': 2,
+               #'mc_surrounding_times_s': [2.0, 5.0],
+               'outlier_threshold_distance': 1.0,
+               'outlier_threshold_diff': 0.5,
                '1cm_replacement_value': 10.01
                }
 
+    # measurements = Measurement.read('C:\\sw\\master\\collected data\\data_20170718_tunnel\\raw_20170718_074348_696382.dat',
+    #                                 'C:\\sw\\master\\collected data\\data_20170718_tunnel\\raw_20170718_074348_696382.dat_images_Camera\\00gt1500721683.81.dat',
+    #                                 options)
+    #
+    # visualization.show_distance_signal(measurements, plt.figure(1))
+    # visualization.show_distance_signal_scatter(measurements, plt.figure(2))
+
+    #free_space_measure_collections = []
     measure_collections_dir = MeasureCollection.read_directory(base_path, options=options)
+    #gt25 = 0
     i = 1
     for file_name, measure_collection in measure_collections_dir.iteritems():
-        visualization.show_distances_plus_segmentation(measure_collection, fig=plt.figure(i))
-        #visualization.show_distance_for_class(measure_collection, GroundTruthClass.OVERTAKEN_CAR, fig=plt.figure(i))
+        #visualization.show_distances_plus_segmentation(measure_collection, fig=plt.figure(i))
+        visualization.show_distance_for_class(measure_collection, [GroundTruthClass.OVERTAKEN_BICYCLE], fig=plt.figure(i))
+        #gt25 += len([mc for mc in measure_collection if mc.get_probable_ground_truth() == GroundTruthClass.FREE_SPACE and mc.length >= 5])
+        #free_space_measure_collections.extend([mc for mc in measure_collection if mc.get_probable_ground_truth() == GroundTruthClass.FREE_SPACE]);
         i += 1
+    #
+    # print gt25
+    # visualization.show_distance_histogram_length(free_space_measure_collections, fig=plt.figure(i))
     #measure_collections = MeasureCollection.read_from_file('C:\\sw\\master\\collected data\\data_20170707\\tagged_mc_20170705_065613_869794.dat')
     #visualization.show_distances_plus_segmentation(measure_collections)
     #visualization.show_distance_signal(measurements)

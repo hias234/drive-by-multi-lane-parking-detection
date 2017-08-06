@@ -29,15 +29,15 @@ class MeasureCollection:
             nr_of_gt_measures[measure.ground_truth.ground_truth_class.name] = \
                 nr_of_gt_measures.get(measure.ground_truth.ground_truth_class.name, 0) + 1
 
-        if self.get_length() > 1.5 and self.avg_distance < 10 and \
+        if self.get_length() > 1.0 and self.avg_distance < 10 and \
                         nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name) is not None and \
                         (nr_of_gt_measures[GroundTruthClass.PARALLEL_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
             return GroundTruthClass.PARALLEL_PARKING_CAR
-        if self.get_length() > 1.0 and self.avg_distance < 10 and \
+        if self.get_length() > 0.5 and self.avg_distance < 10 and \
                         nr_of_gt_measures.get(GroundTruthClass.PERPENDICULAR_PARKING_CAR.name) is not None and \
                         (nr_of_gt_measures[GroundTruthClass.PERPENDICULAR_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
             return GroundTruthClass.PERPENDICULAR_PARKING_CAR
-        if self.get_length() > 1.0 and self.avg_distance < 10 and \
+        if self.get_length() > 0.5 and self.avg_distance < 10 and \
                         nr_of_gt_measures.get(GroundTruthClass.OTHER_PARKING_CAR.name) is not None and \
                         (nr_of_gt_measures[GroundTruthClass.OTHER_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
             return GroundTruthClass.OTHER_PARKING_CAR

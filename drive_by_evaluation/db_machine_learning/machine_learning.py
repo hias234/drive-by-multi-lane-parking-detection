@@ -150,11 +150,10 @@ if __name__ == '__main__':
     options = {
        'mc_min_speed': 4.0, 'mc_merge': True,
        'mc_separation_threshold': 1.0, 'mc_min_measure_count': 2,
-       'mc_surrounding_times_s': [10.0],
+       #'mc_surrounding_times_s': [10.0],
        #'mc_surrounding_m': [50.0, 100.0],
-       'outlier_threshold_distance': 0.3, 'outlier_threshold_diff': 0.1,
+       'outlier_threshold_distance': 1.0, 'outlier_threshold_diff': 0.5,
        '1cm_replacement_value': 10.01
-
        }
 
     dataset = None
@@ -163,13 +162,16 @@ if __name__ == '__main__':
     for file_name, measure_collection in measure_collections_dir.iteritems():
         print file_name
         #print len(measure_collection)
-        measure_collection = filter_acceleration_situations(measure_collection)
+        #measure_collection = filter_acceleration_situations(measure_collection)
         #print 'filtered', len(measure_collection)
         #MeasureCollection.write_arff_file(measure_collections1, ml_file_path)
-        dataset = get_overtaking_situation_dataset(measure_collection, dataset=dataset)
+        #measure_collection = [mc for mc in measure_collection if mc.length > 0.5]
+        dataset = get_dataset(measure_collection, dataset=dataset)
 
-    classifiers = {'mlp': MLPClassifier(), 'tree': DecisionTreeClassifier(), 'knn': KNeighborsClassifier(3),
-                   'svc': SVC(),
+    classifiers = {'NeuralNetwork': MLPClassifier(),
+                   'DecisionTree_GINI': DecisionTreeClassifier(),
+                   'knn3': KNeighborsClassifier(3),
+                   'supportVector': SVC(),
                    #'gaussian': GaussianProcessClassifier(),
                    'randomforest': RandomForestClassifier()}
     for name, clf in classifiers.iteritems():
@@ -209,6 +211,7 @@ if __name__ == '__main__':
             if metric_name == 'ConfusionMatrix':
                 print metric_name
                 confusion_m = np.sum(results[metric_name], axis=0)
+                print dataset.class_labels
                 print confusion_m
             else:
                 print metric_name, np.average(results[metric_name])
@@ -221,3 +224,4 @@ if __name__ == '__main__':
         print 'Precision: ', precision
         recall = (true_pos / (true_pos + false_neg))
         print 'Recall: ', recall
+        print ''
