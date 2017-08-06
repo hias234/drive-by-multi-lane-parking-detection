@@ -1,25 +1,22 @@
 import os
-from drive_by_evaluation.measurement import Measurement
-from drive_by_evaluation.measure_collection import MeasureCollection
-import numpy as np
-import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
-from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.gaussian_process.kernels import RBF
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import cross_val_score
-from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
-import pickle
-from drive_by_evaluation.ground_truth import GroundTruthClass
-from drive_by_evaluation.multi_scorer import MultiScorer
-from db_data_set import DataSet
-from costcla.models import BayesMinimumRiskClassifier, CostSensitiveDecisionTreeClassifier
-
 import random
+
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
+from sklearn.model_selection import cross_val_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+
+from db_data_set import DataSet
+from drive_by_evaluation.db_machine_learning.multi_scorer import MultiScorer
+from drive_by_evaluation.ground_truth import GroundTruthClass
+from drive_by_evaluation.measure_collection import MeasureCollection
+from drive_by_evaluation.measurement import Measurement
+
+
 #from costcla.datasets import load_creditscoring1
 #from costcla.utils import cross_validation
 
