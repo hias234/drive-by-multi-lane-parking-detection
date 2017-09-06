@@ -2,8 +2,10 @@ import csv
 import os
 import time
 
+import math
 import kivy
 from kivy.clock import Clock
+from kivy.garden.graph import Graph, MeshLinePlot
 from kivy.graphics import Color
 from kivy.graphics import Rectangle
 from kivy.uix.boxlayout import BoxLayout
@@ -69,8 +71,8 @@ class VisualizationApp(App):
             '1cm_replacement_value': 10.01
         }
 
-        measurements = Measurement.read(data_file, self.ground_truth_file, options=options)
-        self.measure_collections_f = MeasureCollection.create_measure_collections(measurements, options=options)
+        self.measurements = Measurement.read(data_file, self.ground_truth_file, options=options)
+        self.measure_collections_f = MeasureCollection.create_measure_collections(self.measurements, options=options)
 
         self.cur_index = -1
 
@@ -79,21 +81,34 @@ class VisualizationApp(App):
             Color(1., 0, 0)
             Rectangle(pos=(400, 100), size=(1, 400))
 
+        self.graph = Graph(xlabel='Time [s]', ylabel='Distance [m]', x_ticks_minor=5,
+                           x_ticks_major=25, y_ticks_major=1,
+                           y_grid_label=True, x_grid_label=True, padding=5,
+                           x_grid=True, y_grid=True, xmin=0, xmax=0, ymin=0, ymax=10)
+        first_timestamp = self.measurements[0].timestamp
+        plot = MeshLinePlot(color=[1, 0, 0, 1])
+        plot.points = [(m.timestamp - first_timestamp, m.distance) for m in self.measurements]
+        self.graph.add_plot(plot)
+
         self.show_next_image(0)
 
     def build(self):
-        layout = FloatLayout(size=(300, 300))
+        layout = BoxLayout(size=(300, 300), orientation='vertical')
         # Window.size = (1000, 700)
         layout.add_widget(self.image)
+        layout.add_widget(self.graph)
 
         return layout
 
     def show_next_image(self, dt):
         self.cur_index += 1
         self.image.source = os.path.join(self.camera_folder, self.camera_files[self.cur_index])
+        cur_time = self.get_timestamp(self.cur_index)
+
+        self.graph.xmin = cur_time - 2
+        self.graph.xmax = cur_time + 2
 
         if self.cur_index + 1 < len(self.camera_files):
-            cur_time = self.get_timestamp(self.cur_index)
             next_time = self.get_timestamp(self.cur_index + 1)
             Clock.schedule_once(self.show_next_image, next_time - cur_time)
 
@@ -103,4 +118,5 @@ class VisualizationApp(App):
         return (dt - datetime(1970, 1, 1)).total_seconds()
 
 if __name__ == '__main__':
-    VisualizationAppStarter().run()
+    VisualizationApp('C:\\sw\\master\\collected data\\data_20170725_linz\\raw_20170720_161833_596171.dat').run()
+
