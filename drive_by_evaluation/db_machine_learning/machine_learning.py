@@ -1,6 +1,8 @@
 import os
 import random
 
+from custom_clf import SurroundingClf
+
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
@@ -9,6 +11,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import KFold
 
 from db_data_set import DataSet
 from drive_by_evaluation.db_machine_learning.multi_scorer import MultiScorer
@@ -25,11 +28,29 @@ def get_dataset(measure_collections, dataset=None):
     if dataset is None:
         dataset = DataSet(['FREE_SPACE', 'PARKING_CAR', 'OVERTAKING_SITUATION', 'PARKING_MC_BC'])
 
-    for mc in measure_collections:
-        features = [mc.avg_distance, mc.get_length(), mc.get_duration(), mc.get_nr_of_measures(),
-                    mc.get_distance_variance(), mc.avg_speed, mc.get_acceleration(),
-                    mc.first_measure().distance, mc.measures[len(mc.measures) / 2].distance,
-                    mc.last_measure().distance]
+    for i, mc in enumerate(measure_collections):
+        last_distance = 0 if i == 0 else measure_collections[i-1].avg_distance #.last_measure().distance
+        next_distance = 0 if len(measure_collections) == i+1 else measure_collections[i+1].avg_distance #.first_measure().distance
+        features = [mc.id,
+                    mc.avg_distance,
+                    mc.get_length(),
+                    mc.get_duration(),
+                    mc.get_nr_of_measures(),
+                    mc.get_distance_variance(),
+                    mc.avg_speed,
+                    mc.get_acceleration(),
+                    #last_distance,
+                    #next_distance,
+                    mc.avg_distance - last_distance,
+                    mc.avg_distance - next_distance,
+                    mc.first_measure().distance - last_distance,
+                    mc.last_measure().distance - next_distance,
+                    mc.first_measure().distance,
+                    mc.measures[len(mc.measures) / 2].distance,
+                    mc.measures[len(mc.measures) / 4].distance,
+                    mc.measures[len(mc.measures) / 4 * 3].distance,
+                    mc.last_measure().distance
+                    ]
 
         for interval, surrounding_mc in mc.time_surrounding_mcs.iteritems():
             features.append(surrounding_mc.avg_distance)
@@ -155,22 +176,33 @@ if __name__ == '__main__':
 
     dataset = None
     #write_to_file(base_path, ml_file_path)
-    measure_collections_dir = MeasureCollection.read_directory(base_path, options=options)
-    for file_name, measure_collection in measure_collections_dir.iteritems():
+    measure_collections_files_dir = MeasureCollection.read_directory(base_path, options=options)
+    measure_collections_dir = {}
+    for file_name, measure_collections in measure_collections_files_dir.iteritems():
         print file_name
         #print len(measure_collection)
         #measure_collection = filter_acceleration_situations(measure_collection)
         #print 'filtered', len(measure_collection)
         #MeasureCollection.write_arff_file(measure_collections1, ml_file_path)
         #measure_collection = [mc for mc in measure_collection if mc.length > 0.5]
-        dataset = get_dataset(measure_collection, dataset=dataset)
+        dataset = get_dataset(measure_collections, dataset=dataset)
+        measure_collections_dir.update(MeasureCollection.mc_list_to_dict(measure_collections))
 
-    classifiers = {'NeuralNetwork': MLPClassifier(),
-                   'DecisionTree_GINI': DecisionTreeClassifier(),
-                   'knn3': KNeighborsClassifier(3),
-                   'supportVector': SVC(),
-                   #'gaussian': GaussianProcessClassifier(),
-                   'randomforest': RandomForestClassifier()}
+    classifiers = {
+       'NeuralNetwork': MLPClassifier(),
+       #'NeuralNetwork_relu1000': MLPClassifier(activation='relu', max_iter=10000000000),
+       #'NeuralNetwork_relu1000_hl1000': MLPClassifier(activation='relu', max_iter=10000, hidden_layer_sizes=(50,)),
+       #'NeuralNetwork_relu1000000': MLPClassifier(activation='relu', max_iter=10000000),
+       'DecisionTree_GINI': DecisionTreeClassifier(),
+       'knn3': KNeighborsClassifier(3),
+       'supportVector': SVC(),
+       #'gaussian': GaussianProcessClassifier(),
+       #'randomforest100': RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42),
+       'randomforest1000': RandomForestClassifier(n_estimators=1000, n_jobs=-1, random_state=42),
+       #'randomforest10000_balanced': RandomForestClassifier(n_estimators=10000, class_weight='balanced')
+       #'custom': SurroundingClf(measure_collections_dir, base_clf=MLPClassifier(), lvl2_clf=MLPClassifier())
+    }
+
     for name, clf in classifiers.iteritems():
         scorer = MultiScorer({
             'Accuracy': (accuracy_score, {}),
@@ -200,7 +232,8 @@ if __name__ == '__main__':
         # print len(mismatches)
         #
         # continue
-        cross_val_score(clf, dataset.x, dataset.y_true, cv=10, scoring=scorer)
+        kfold = KFold(n_splits=5)
+        cross_val_score(clf, dataset.x, dataset.y_true, cv=kfold, scoring=scorer)
         results = scorer.get_results()
 
         confusion_m = None

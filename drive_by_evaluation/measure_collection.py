@@ -8,7 +8,11 @@ from ground_truth import GroundTruth, GroundTruthClass
 
 
 class MeasureCollection:
+    NEXT_AUTO_GEN_ID = 0
+
     def __init__(self):
+        MeasureCollection.NEXT_AUTO_GEN_ID += 1
+        self.id = MeasureCollection.NEXT_AUTO_GEN_ID
         self.measures = []
         self.sum_distance = 0.0
         self.avg_distance = 0.0
@@ -22,50 +26,51 @@ class MeasureCollection:
         self.length_surrounding_mcs = dict()
 
     def get_probable_ground_truth(self):
-        ratio_threshold = 0.6
+        ratio_threshold = 0.7
+        min_cnt_measures = 5
 
         nr_of_gt_measures = {}
         for measure in self.measures:
             nr_of_gt_measures[measure.ground_truth.ground_truth_class.name] = \
-                nr_of_gt_measures.get(measure.ground_truth.ground_truth_class.name, 0) + 1
+                nr_of_gt_measures.get(measure.ground_truth.ground_truth_class.name, 0.0) + 1.0
 
-        if self.get_length() > 1.0 and self.avg_distance < 10 and \
-                        nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name) is not None and \
-                        (nr_of_gt_measures[GroundTruthClass.PARALLEL_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
+        #if self.get_length() > 0.5 and self.avg_distance < 10 and \
+        if nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name, 0) >= min_cnt_measures and \
+           nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.PARALLEL_PARKING_CAR
-        if self.get_length() > 0.5 and self.avg_distance < 10 and \
-                        nr_of_gt_measures.get(GroundTruthClass.PERPENDICULAR_PARKING_CAR.name) is not None and \
-                        (nr_of_gt_measures[GroundTruthClass.PERPENDICULAR_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
+        #if self.get_length() > 0.5 and self.avg_distance < 10 and \
+        if nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name, 0) >= min_cnt_measures and \
+           nr_of_gt_measures.get(GroundTruthClass.PERPENDICULAR_PARKING_CAR.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.PERPENDICULAR_PARKING_CAR
-        if self.get_length() > 0.5 and self.avg_distance < 10 and \
-                        nr_of_gt_measures.get(GroundTruthClass.OTHER_PARKING_CAR.name) is not None and \
-                        (nr_of_gt_measures[GroundTruthClass.OTHER_PARKING_CAR.name] / len(self.measures)) > ratio_threshold:
+        #if self.get_length() > 0.5 and self.avg_distance < 10 and \
+        if nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name, 0) >= min_cnt_measures and \
+           nr_of_gt_measures.get(GroundTruthClass.OTHER_PARKING_CAR.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.OTHER_PARKING_CAR
 
-        if self.get_length() > 0.5 and self.avg_distance < 10 and \
-                        nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_CAR.name) is not None and \
-                        (nr_of_gt_measures[GroundTruthClass.OVERTAKEN_CAR.name] / len(self.measures)) > ratio_threshold:
+        #if self.get_length() > 0.5 and self.avg_distance < 10 and \
+        if nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name, 0) >= min_cnt_measures and \
+           nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_CAR.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.OVERTAKEN_CAR
-        if self.get_length() > 0.5 and self.avg_distance < 10 and \
-                        nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_BICYCLE.name) is not None and \
-                        (nr_of_gt_measures[GroundTruthClass.OVERTAKEN_BICYCLE.name] / len(self.measures)) > ratio_threshold:
+        #if self.get_length() > 0.5 and self.avg_distance < 10 and \
+        if nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_BICYCLE.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.OVERTAKEN_BICYCLE
-        if self.get_length() > 0.5 and self.avg_distance < 10 and \
-                        nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_MOTORCYCLE.name) is not None and \
-                        (nr_of_gt_measures[GroundTruthClass.OVERTAKEN_MOTORCYCLE.name] / len(self.measures)) > ratio_threshold:
+        #if self.get_length() > 0.5 and self.avg_distance < 10 and \
+        if nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_MOTORCYCLE.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.OVERTAKEN_MOTORCYCLE
 
-        if self.get_length() > 0.1 and self.avg_distance < 10 and \
-                        nr_of_gt_measures.get(GroundTruthClass.PARKING_BICYCLE.name) is not None and \
-                        (nr_of_gt_measures[GroundTruthClass.PARKING_BICYCLE.name] / len(self.measures)) > ratio_threshold:
+        #if self.get_length() > 0.1 and self.avg_distance < 10 and \
+        if nr_of_gt_measures.get(GroundTruthClass.PARKING_BICYCLE.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.PARKING_BICYCLE
 
-        if self.get_length() > 0.1 and self.avg_distance < 10 and \
-                        nr_of_gt_measures.get(GroundTruthClass.PARKING_MOTORCYCLE.name) is not None and \
-                        (nr_of_gt_measures[GroundTruthClass.PARKING_MOTORCYCLE.name] / len(self.measures)) > ratio_threshold:
+        #if self.get_length() > 0.1 and self.avg_distance < 10 and \
+        if nr_of_gt_measures.get(GroundTruthClass.PARKING_MOTORCYCLE.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.PARKING_MOTORCYCLE
 
         return GroundTruthClass.FREE_SPACE
+
+    def length_to(self, other_mc):
+        return vincenty((self.first_measure().latitude, self.first_measure().longitude),
+                        (other_mc.first_measure().latitude, other_mc.last_measure().longitude)).meters
 
     def is_empty(self):
         return len(self.measures) == 0
@@ -254,6 +259,10 @@ class MeasureCollection:
             print 'merged plateaus', len(measure_collections)
 
         return measure_collections
+
+    @staticmethod
+    def mc_list_to_dict(measure_collection_list):
+        return {mc.id: mc for mc in measure_collection_list}
 
     @staticmethod
     def write_to_file(path, measure_collections):
