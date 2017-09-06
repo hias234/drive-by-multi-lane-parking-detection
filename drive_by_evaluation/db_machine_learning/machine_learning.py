@@ -189,13 +189,13 @@ if __name__ == '__main__':
         measure_collections_dir.update(MeasureCollection.mc_list_to_dict(measure_collections))
 
     classifiers = {
-       'NeuralNetwork': MLPClassifier(),
+       #'NeuralNetwork': MLPClassifier(),
        #'NeuralNetwork_relu1000': MLPClassifier(activation='relu', max_iter=10000000000),
-       #'NeuralNetwork_relu1000_hl1000': MLPClassifier(activation='relu', max_iter=10000, hidden_layer_sizes=(50,)),
+       'NeuralNetwork_relu1000_hl1000': MLPClassifier(activation='relu', max_iter=10000, hidden_layer_sizes=(50,50,50,50)),
        #'NeuralNetwork_relu1000000': MLPClassifier(activation='relu', max_iter=10000000),
        'DecisionTree_GINI': DecisionTreeClassifier(),
-       'knn3': KNeighborsClassifier(3),
-       'supportVector': SVC(),
+       'knn20': KNeighborsClassifier(21),
+       #'supportVector': SVC(),
        #'gaussian': GaussianProcessClassifier(),
        #'randomforest100': RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42),
        'randomforest1000': RandomForestClassifier(n_estimators=1000, n_jobs=-1, random_state=42),
