@@ -75,14 +75,14 @@ class VisualizationApp(App):
         self.measure_collections_f = MeasureCollection.create_measure_collections(self.measurements, options=options)
 
         self.image = Image(source=os.path.join(self.camera_folder, self.camera_files[0]), size=(352, 288), pos=(0, 0))
-        with self.image.canvas as canvas:
-            Color(1., 0, 0)
-            Rectangle(pos=(400, 200), size=(1, 10000))
+        #with self.image.canvas as canvas:
+        #    Color(1., 0, 0)
+         #   Rectangle(size=(1, 10000))
 
-        self.graph = Graph(xlabel='Time [s]', ylabel='Distance [m]', x_ticks_minor=5,
-                           x_ticks_major=25, y_ticks_major=1,
-                           y_grid_label=True, x_grid_label=True, padding=5,
-                           x_grid=True, y_grid=True, xmin=0, xmax=0, ymin=-0.1, ymax=11)
+        self.graph = Graph(xlabel='Time [s]', ylabel='Distance [m]', #x_ticks_minor=0.5,
+                           x_ticks_major=2, y_ticks_major=1,
+                           y_grid_label=True, x_grid_label=True, padding=10,
+                           x_grid=True, y_grid=True, xmin=0, xmax=0, ymin=-1, ymax=11)
         self.first_timestamp = self.measurements[0].timestamp
         plot = MeshLinePlot(color=[1, 1, 1, 1])
         plot.points = [(m.timestamp - self.first_timestamp, m.distance) for m in self.measurements]
@@ -92,12 +92,17 @@ class VisualizationApp(App):
         self.show_next_image(0)
 
     def build(self):
+        flow_layout = FloatLayout()
         layout = BoxLayout(size=(300, 300), orientation='vertical')
         # Window.size = (1000, 700)
         layout.add_widget(self.image)
         layout.add_widget(self.graph)
 
-        return layout
+        flow_layout.add_widget(layout)
+        with flow_layout.canvas as canvas:
+            Color(1., 0, 0)
+            Rectangle(size=(1, 10000))
+        return flow_layout
 
     def show_next_image(self, dt):
         self.cur_index += 1
@@ -118,5 +123,5 @@ class VisualizationApp(App):
 
 
 if __name__ == '__main__':
-    VisualizationApp('C:\\sw\\master\\collected data\\data_20170725_linz\\raw_20170720_161833_596171.dat').run()
+    VisualizationApp('C:\\sw\\master\\collected data\\data_20170725_linz\\raw_20170725_065205_690205.dat').run()
 
