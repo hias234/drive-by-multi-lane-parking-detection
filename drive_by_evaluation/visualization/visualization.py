@@ -111,11 +111,11 @@ class VisualizationApp(App):
             next_time = self.get_timestamp(self.cur_index + 1)
             Clock.schedule_once(self.show_next_image, next_time - cur_time)
 
-
     def get_timestamp(self, index):
         f = self.camera_files[index]
         dt = datetime.strptime(f.split('.')[0], '%Y%m%d_%H%M%S_%f')
         return (dt - datetime(1970, 1, 1)).total_seconds()
+
 
 if __name__ == '__main__':
     VisualizationApp('C:\\sw\\master\\collected data\\data_20170725_linz\\raw_20170720_161833_596171.dat').run()
