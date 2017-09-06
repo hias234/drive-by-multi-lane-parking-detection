@@ -54,7 +54,7 @@ class VisualizationApp(App):
 
         self.data_file = data_file
         self.camera_folder = data_file + '_images_Camera\\'
-        self.camera_files = sorted([os.path.join(self.camera_folder, f) for f in os.listdir(self.camera_folder)
+        self.camera_files = sorted([f for f in os.listdir(self.camera_folder)
                                     if os.path.isfile(os.path.join(self.camera_folder, f)) and f.endswith('.jpg')])
         self.ground_truth_file = [os.path.join(self.camera_folder, f) for f in os.listdir(self.camera_folder)
                                   if os.path.isfile(os.path.join(self.camera_folder, f)) and f.startswith('00gt')][0]
@@ -72,14 +72,14 @@ class VisualizationApp(App):
         measurements = Measurement.read(data_file, self.ground_truth_file, options=options)
         self.measure_collections_f = MeasureCollection.create_measure_collections(measurements, options=options)
 
-        self.cur_index = 0
+        self.cur_index = -1
 
-        self.image = Image(source=self.camera_files[0], size=(352, 288), pos=(0, 0))
+        self.image = Image(source=os.path.join(self.camera_folder, self.camera_files[0]), size=(352, 288), pos=(0, 0))
         with self.image.canvas as canvas:
             Color(1., 0, 0)
             Rectangle(pos=(400, 100), size=(1, 400))
 
-        Clock.schedule_interval(self.show_next_image, 0.1)
+        self.show_next_image(0)
 
     def build(self):
         layout = FloatLayout(size=(300, 300))
@@ -90,8 +90,17 @@ class VisualizationApp(App):
 
     def show_next_image(self, dt):
         self.cur_index += 1
-        self.image.source = self.camera_files[self.cur_index]
+        self.image.source = os.path.join(self.camera_folder, self.camera_files[self.cur_index])
 
+        if self.cur_index + 1 < len(self.camera_files):
+            cur_time = self.get_timestamp(self.cur_index)
+            next_time = self.get_timestamp(self.cur_index + 1)
+            Clock.schedule_once(self.show_next_image, next_time - cur_time)
+
+    def get_timestamp(self, index):
+        f = self.camera_files[index]
+        dt = datetime.strptime(f.split('.')[0], '%Y%m%d_%H%M%S_%f')
+        return (dt - datetime(1970, 1, 1)).total_seconds()
 
 if __name__ == '__main__':
     VisualizationAppStarter().run()
