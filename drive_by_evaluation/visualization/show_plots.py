@@ -12,11 +12,11 @@ from scipy.signal import butter, lfilter
 import matplotlib.pyplot as plt
 import matplotlib
 import gmplot
-from ground_truth import GroundTruthClass
+from drive_by_evaluation.ground_truth import GroundTruthClass
 from mpl_toolkits.mplot3d import Axes3D
 
-from measurement import Measurement
-from measure_collection import MeasureCollection
+from drive_by_evaluation.measurement import Measurement
+from drive_by_evaluation.measure_collection import MeasureCollection
 
 
 class MeasurementVisualization:

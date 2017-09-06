@@ -1,17 +1,10 @@
-import os
-from time import *
-import time
-import threading
-import csv
-from collections import namedtuple
-from math import cos, sqrt
-from geopy.distance import vincenty
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-from measurement import Measurement
-from visualize import MeasurementVisualization
+from drive_by_evaluation.visualization.show_plots import MeasurementVisualization
 from measure_collection import MeasureCollection
+from measurement import Measurement
+
 
 class DriveByEvaluation:
 
