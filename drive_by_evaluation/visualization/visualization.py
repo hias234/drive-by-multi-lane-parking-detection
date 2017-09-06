@@ -74,22 +74,21 @@ class VisualizationApp(App):
         self.measurements = Measurement.read(data_file, self.ground_truth_file, options=options)
         self.measure_collections_f = MeasureCollection.create_measure_collections(self.measurements, options=options)
 
-        self.cur_index = -1
-
         self.image = Image(source=os.path.join(self.camera_folder, self.camera_files[0]), size=(352, 288), pos=(0, 0))
         with self.image.canvas as canvas:
             Color(1., 0, 0)
-            Rectangle(pos=(400, 100), size=(1, 400))
+            Rectangle(pos=(400, 200), size=(1, 10000))
 
         self.graph = Graph(xlabel='Time [s]', ylabel='Distance [m]', x_ticks_minor=5,
                            x_ticks_major=25, y_ticks_major=1,
                            y_grid_label=True, x_grid_label=True, padding=5,
-                           x_grid=True, y_grid=True, xmin=0, xmax=0, ymin=0, ymax=10)
-        first_timestamp = self.measurements[0].timestamp
-        plot = MeshLinePlot(color=[1, 0, 0, 1])
-        plot.points = [(m.timestamp - first_timestamp, m.distance) for m in self.measurements]
+                           x_grid=True, y_grid=True, xmin=0, xmax=0, ymin=-0.1, ymax=11)
+        self.first_timestamp = self.measurements[0].timestamp
+        plot = MeshLinePlot(color=[1, 1, 1, 1])
+        plot.points = [(m.timestamp - self.first_timestamp, m.distance) for m in self.measurements]
         self.graph.add_plot(plot)
 
+        self.cur_index = -1
         self.show_next_image(0)
 
     def build(self):
@@ -105,12 +104,13 @@ class VisualizationApp(App):
         self.image.source = os.path.join(self.camera_folder, self.camera_files[self.cur_index])
         cur_time = self.get_timestamp(self.cur_index)
 
-        self.graph.xmin = cur_time - 2
-        self.graph.xmax = cur_time + 2
+        self.graph.xmin = cur_time - self.first_timestamp - 2
+        self.graph.xmax = cur_time - self.first_timestamp + 2
 
         if self.cur_index + 1 < len(self.camera_files):
             next_time = self.get_timestamp(self.cur_index + 1)
             Clock.schedule_once(self.show_next_image, next_time - cur_time)
+
 
     def get_timestamp(self, index):
         f = self.camera_files[index]
