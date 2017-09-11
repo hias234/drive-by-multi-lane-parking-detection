@@ -166,13 +166,16 @@ if __name__ == '__main__':
     ml_file_path = 'C:\\sw\\master\\20170718ml.arff'
 
     options = {
-       'mc_min_speed': 4.0, 'mc_merge': True,
-       'mc_separation_threshold': 1.0, 'mc_min_measure_count': 2,
-       #'mc_surrounding_times_s': [10.0],
-       #'mc_surrounding_m': [50.0, 100.0],
-       'outlier_threshold_distance': 1.0, 'outlier_threshold_diff': 0.5,
-       '1cm_replacement_value': 10.01
-       }
+        'mc_min_speed': 4.0,
+        'mc_merge': True,
+        'mc_separation_threshold': 1.0,
+        'mc_min_measure_count': 2,
+        # 'mc_surrounding_times_s': [2.0, 5.0],
+        'outlier_threshold_distance': 1.0,
+        'outlier_threshold_diff': 0.5,
+        'replacement_values': {0.01: 10.01},
+        'min_measurement_value': 0.06,
+    }
 
     dataset = None
     #write_to_file(base_path, ml_file_path)
@@ -189,17 +192,17 @@ if __name__ == '__main__':
         measure_collections_dir.update(MeasureCollection.mc_list_to_dict(measure_collections))
 
     classifiers = {
-       #'NeuralNetwork': MLPClassifier(),
+       'NeuralNetwork': MLPClassifier(),
        #'NeuralNetwork_relu1000': MLPClassifier(activation='relu', max_iter=10000000000),
-       'NeuralNetwork_relu1000_hl1000': MLPClassifier(activation='relu', max_iter=10000, hidden_layer_sizes=(50,50,50,50)),
-       #'NeuralNetwork_relu1000000': MLPClassifier(activation='relu', max_iter=10000000),
+       'NeuralNetwork_relu1000_hl1000': MLPClassifier(activation='relu', max_iter=100000, hidden_layer_sizes=(50,50,50,50,50)),
+       'NeuralNetwork_relu1000000': MLPClassifier(activation='relu', max_iter=10000000),
        'DecisionTree_GINI': DecisionTreeClassifier(),
        'knn20': KNeighborsClassifier(21),
-       #'supportVector': SVC(),
+       'supportVector': SVC(),
        #'gaussian': GaussianProcessClassifier(),
-       #'randomforest100': RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42),
+       'randomforest100': RandomForestClassifier(n_estimators=100, n_jobs=-1, random_state=42),
        'randomforest1000': RandomForestClassifier(n_estimators=1000, n_jobs=-1, random_state=42),
-       #'randomforest10000_balanced': RandomForestClassifier(n_estimators=10000, class_weight='balanced')
+       'randomforest10000_balanced': RandomForestClassifier(n_estimators=10000, class_weight='balanced')
        #'custom': SurroundingClf(measure_collections_dir, base_clf=MLPClassifier(), lvl2_clf=MLPClassifier())
     }
 

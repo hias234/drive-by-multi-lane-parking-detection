@@ -26,7 +26,8 @@ class Measurement:
         if options is None:
             options = dict()
 
-        replacement_for_1cm = options.get('1cm_replacement_value', 0.01)
+        replacement_values = options.get('replacement_values', {})
+        min_value = options.get('min_measurement_value', 0.0)
 
         gps_measurements = []
         distances = []
@@ -40,9 +41,9 @@ class Measurement:
                 timestamp = float(row[1])
                 if sensor_type == 'LidarLite':
                     distance_value = float(row[2]) / 100
-                    if distance_value == 0.01:
-                        distance_value = replacement_for_1cm
-                    distances.append(LidarLiteMeasurement(timestamp, distance_value))
+                    if distance_value >= min_value:
+                        distance_value = replacement_values.get(distance_value, distance_value)
+                        distances.append(LidarLiteMeasurement(timestamp, distance_value))
                 elif sensor_type == 'GPS':
                     if row[2] != '0.0' and row[3] != '0.0' and \
                             row[2] != 'nan' and row[3] != 'nan' and \

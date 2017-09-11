@@ -189,15 +189,17 @@ if __name__ == '__main__':
 
     matplotlib.rc('font', **font)
 
-    options = {'mc_min_speed': 4.0,
-               'mc_merge': True,
-               'mc_separation_threshold': 1.0,
-               'mc_min_measure_count': 2,
-               #'mc_surrounding_times_s': [2.0, 5.0],
-               'outlier_threshold_distance': 1.0,
-               'outlier_threshold_diff': 0.5,
-               '1cm_replacement_value': 10.01
-               }
+    options = {
+        'mc_min_speed': 4.0,
+        'mc_merge': True,
+        'mc_separation_threshold': 1.0,
+        'mc_min_measure_count': 2,
+        #'mc_surrounding_times_s': [2.0, 5.0],
+        'outlier_threshold_distance': 1.0,
+        'outlier_threshold_diff': 0.5,
+        'replacement_values': {0.01: 10.01},
+        'min_measurement_value': 0.06,
+    }
 
     # measurements = Measurement.read('C:\\sw\\master\\collected data\\data_20170718_tunnel\\raw_20170718_074348_696382.dat',
     #                                 'C:\\sw\\master\\collected data\\data_20170718_tunnel\\raw_20170718_074348_696382.dat_images_Camera\\00gt1500721683.81.dat',
