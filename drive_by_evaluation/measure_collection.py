@@ -29,6 +29,9 @@ class MeasureCollection:
         ratio_threshold = 0.7
         min_cnt_measures = 5
 
+        if self.avg_distance > 10.0:
+            return GroundTruthClass.FREE_SPACE
+
         nr_of_gt_measures = {}
         for measure in self.measures:
             nr_of_gt_measures[measure.ground_truth.ground_truth_class.name] = \
@@ -39,16 +42,16 @@ class MeasureCollection:
            nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.PARALLEL_PARKING_CAR
         #if self.get_length() > 0.5 and self.avg_distance < 10 and \
-        if nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name, 0) >= min_cnt_measures and \
+        if nr_of_gt_measures.get(GroundTruthClass.PERPENDICULAR_PARKING_CAR.name, 0) >= min_cnt_measures and \
            nr_of_gt_measures.get(GroundTruthClass.PERPENDICULAR_PARKING_CAR.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.PERPENDICULAR_PARKING_CAR
         #if self.get_length() > 0.5 and self.avg_distance < 10 and \
-        if nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name, 0) >= min_cnt_measures and \
+        if nr_of_gt_measures.get(GroundTruthClass.OTHER_PARKING_CAR.name, 0) >= min_cnt_measures and \
            nr_of_gt_measures.get(GroundTruthClass.OTHER_PARKING_CAR.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.OTHER_PARKING_CAR
 
         #if self.get_length() > 0.5 and self.avg_distance < 10 and \
-        if nr_of_gt_measures.get(GroundTruthClass.PARALLEL_PARKING_CAR.name, 0) >= min_cnt_measures and \
+        if nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_CAR.name, 0) >= min_cnt_measures and \
            nr_of_gt_measures.get(GroundTruthClass.OVERTAKEN_CAR.name, 0) / len(self.measures) > ratio_threshold:
             return GroundTruthClass.OVERTAKEN_CAR
         #if self.get_length() > 0.5 and self.avg_distance < 10 and \
@@ -340,7 +343,7 @@ class MeasureCollection:
     def read_directory(base_path, options=None):
         measure_collections = {}
 
-        for f in os.listdir(base_path):
+        for f in sorted(os.listdir(base_path)):
             if os.path.isdir(os.path.join(base_path, f)) and not f.endswith('_images_Camera'):
                 sub_dir = os.path.join(base_path, f)
                 sub_dir_measure_collections = MeasureCollection.read_directory(sub_dir, options=options)

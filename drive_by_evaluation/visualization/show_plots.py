@@ -180,8 +180,8 @@ class MeasurementVisualization:
 if __name__ == '__main__':
     visualization = MeasurementVisualization()
     # base_path = 'C:\\sw\\master\\collected data\\data_20170725_linz\\'
-    #base_path = 'C:\\sw\\master\\collected data\\data_20170725_linz\\'
-    base_path = 'C:\\sw\\master\\collected data\\'
+    base_path = 'C:\\sw\\master\\collected data\\data_20170908_linz\\'
+    #base_path = 'C:\\sw\\master\\collected data\\'
 
     font = {'family': 'normal',
             'weight': 'normal',
